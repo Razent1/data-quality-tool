@@ -1,0 +1,16 @@
+.App {
+  text-align: center;
+}
+
+.headings {
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+.dropdownBlock {
+  margin-bottom: 50px;
+}
+
+.but {
+  justify-content:flex-end;
+}
