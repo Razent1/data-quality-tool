@@ -3,24 +3,43 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Form from 'react-bootstrap/Form';
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import {Button} from "react-bootstrap";
 import { useDispatch, useSelector } from 'react-redux';
 import {setDatabase, setTable, setCheckerName, setFiltrationCondition} from './store/exportData/exportData';
 
 
-const itemsDB = ["Databricks"];
-const dbSchemas = ["default"]; //here will implement
+// const itemsDB = ["Databricks"];
+// const dbSchemas = ["default"]; //here will implement
 
 
 function Chosers() {
-    // const [db, setDB] = useState("");
-    // const [schema, setSchema] = useState("");
+    // const [v, setV] = useState(null);
+    const [itemsDB, setItemsDb] = useState([]);
+    const [dbSchemas, setSchema] = useState([]);
     const [checker, setChecker] = useState("");
     const [filtration, setFiltration] = useState("");
     const [data, setData] = useState('');
     const exportData = useSelector(state => state.data);
     const dispatch = useDispatch();
+
+    useEffect(() => {
+        fetch('api/databases')
+            .then(response => response.json())
+            .then(response => setItemsDb(response));
+    })
+
+    useEffect(() => {
+        if (exportData.db !== null) {
+            fetch("api/tables", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({'db': exportData.db})
+            })
+                .then(response => response.json())
+                .then(response => setSchema(response))
+
+        }}, [exportData.db])
 
     const onSubmitButton = () => {
         dispatch(setCheckerName(checker));
@@ -42,7 +61,7 @@ function Chosers() {
         <div>
             <div className="dropdownBlock">
             <div className="headings">
-                Connection to DataBase
+                Select Database
             </div>
                 <Dropdown>
                     <Dropdown.Toggle variant="outline-dark" style={{marginBottom: '10px', width:'100%',
@@ -55,11 +74,11 @@ function Chosers() {
                         ))}
                     </Dropdown.Menu>
                 </Dropdown>
-                <pre>Defualt selected DB: {exportData.db}</pre>
+                <pre>Selected DB: {exportData.db}</pre>
             </div>
             <div className="dropdownBlock">
                 <div className="headings">
-                    Schema and Table
+                   Select Table
                 </div>
 
                 <Dropdown >
@@ -99,7 +118,7 @@ function Chosers() {
                     <Button variant="primary" size="lg" onClick={onSubmitButton}>
                         Make a check
                     </Button>{' '}
-                    <div>{console.log(exportData)}</div>
+                    {/*<div>{console.log(exportData)}</div>*/}
                 </div>
             </div>
             </>
