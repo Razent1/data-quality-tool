@@ -9,37 +9,42 @@ import { useDispatch, useSelector } from 'react-redux';
 import {setDatabase, setTable, setCheckerName, setFiltrationCondition} from './store/exportData/exportData';
 
 
-// const itemsDB = ["Databricks"];
-// const dbSchemas = ["default"]; //here will implement
-
-
 function Chosers() {
-    // const [v, setV] = useState(null);
     const [itemsDB, setItemsDb] = useState([]);
     const [dbSchemas, setSchema] = useState([]);
     const [checker, setChecker] = useState("");
     const [filtration, setFiltration] = useState("");
+    const [ready, setReady] = useState(false);
     const [data, setData] = useState('');
     const exportData = useSelector(state => state.data);
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        fetch('api/databases')
-            .then(response => response.json())
-            .then(response => setItemsDb(response));
-    })
+
 
     useEffect(() => {
-        if (exportData.db !== null) {
-            fetch("api/tables", {
+        async function fetchDb() {
+        fetch('api/databases')
+            .then(response => response.json())
+            .then(response => setItemsDb(response))
+        }
+        fetchDb();
+    }, [])
+
+    useEffect(() => {
+       async function fetchTables() {
+           if (exportData.db !== null) {
+            await fetch("api/tables", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({'db': exportData.db})
             })
                 .then(response => response.json())
                 .then(response => setSchema(response))
-
-        }}, [exportData.db])
+                .then(() => setReady(true));
+        }
+       }
+       fetchTables();
+    }, [exportData.db])
 
     const onSubmitButton = () => {
         dispatch(setCheckerName(checker));
@@ -67,8 +72,13 @@ function Chosers() {
                     <Dropdown.Toggle variant="outline-dark" style={{marginBottom: '10px', width:'100%',
                         display:'block'}}>Choose from the list</Dropdown.Toggle>
                     <Dropdown.Menu>
-                        {itemsDB.map((itemsDB) => (
-                            <Dropdown.Item onClick={() => {dispatch(setDatabase(itemsDB))}}>
+                        {itemsDB.length === 0 && <Dropdown.Item> Loading... </Dropdown.Item>}
+                        {itemsDB.length > 0 && itemsDB.map((itemsDB) => (
+                            <Dropdown.Item onClick={() => {
+                                if (itemsDB !== exportData.db) {
+                                    dispatch(setDatabase(itemsDB));
+                                    setReady(false);}
+                            }}>
                                 {itemsDB}
                             </Dropdown.Item>
                         ))}
@@ -85,7 +95,9 @@ function Chosers() {
                     <Dropdown.Toggle variant="outline-dark" style={{marginBottom: '10px', width:'100%',
                         display:'block'}}>Choose from the list</Dropdown.Toggle>
                     <Dropdown.Menu>
-                        {dbSchemas.map((dbSchema) => (
+                        {exportData.db === null && <Dropdown.Item> Database not selected </Dropdown.Item>}
+                        {(!ready && exportData.db !== null) && <Dropdown.Item> Loading... </Dropdown.Item>}
+                        {ready && dbSchemas.map((dbSchema) => (
                             <Dropdown.Item onClick={() => dispatch(setTable(dbSchema))}>
                                 {dbSchema}
                             </Dropdown.Item>
@@ -118,7 +130,6 @@ function Chosers() {
                     <Button variant="primary" size="lg" onClick={onSubmitButton}>
                         Make a check
                     </Button>{' '}
-                    {/*<div>{console.log(exportData)}</div>*/}
                 </div>
             </div>
             </>

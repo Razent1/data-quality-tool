@@ -52,7 +52,7 @@ async def get_tables(db: dict) -> list:
 
     connection = sql.connect(
         server_hostname="dbc-18975113-1ba6.cloud.databricks.com",
-        http_path="/sql/1.0/warehouses/33b05f27aa211816",
+        http_path="/sql/protocolv1/o/2520309401638937/0502-062208-z7pwtwc3",
         access_token="dapifb287f87a839119fa623206a5c545a0d")
 
     cursor = connection.cursor()
