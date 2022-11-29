@@ -76,8 +76,8 @@ const defaultData =
             actualitySimple: false,
             actualityDifficulty: false
         },
-        checkerName: null,
-        filtrationCondition: null,
+        checkerName: '',
+        filtrationCondition: '',
         time: '10:00',
         interval: null,
         repeats: {

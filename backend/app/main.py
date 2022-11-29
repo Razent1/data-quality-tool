@@ -64,3 +64,12 @@ async def get_tables(db: dict) -> list:
     connection.close()
     return [tbl[1] for tbl in tables]
 
+
+@app.post("/send_checker", tags=["send_job_info"])
+async def send_checker(info: dict) -> None:
+    """
+       Send parameter for checker
+    """
+
+    return info
+

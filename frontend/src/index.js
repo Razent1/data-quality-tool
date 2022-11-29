@@ -4,12 +4,12 @@ import Chosers from './Chosers';
 import Checkbox from './Checkbox';
 import Cron from './Cron';
 import reportWebVitals from './reportWebVitals';
-import { Provider } from 'react-redux';
-import { createStore } from 'redux';
+import {Provider} from 'react-redux';
+import {createStore} from 'redux';
 import exportData from './store/exportData/exportData';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-const store = createStore (exportData);
+const store = createStore(exportData);
 root.render(
     <React.StrictMode>
         <Provider store={store}>
