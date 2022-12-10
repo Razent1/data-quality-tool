@@ -68,7 +68,7 @@ function Cron() {
                     Repeat every day of week
                 </div>
                 <Form>
-                    {['Sun', 'Mon', 'Tu', 'We', 'Thu', 'Fri']
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
                         .map((type) => (
                             <div key={`inline-checkbox-${type}`} className="mb-3">
                                 <Form.Check
@@ -88,12 +88,12 @@ function Cron() {
                                                 ...exportData.repeats,
                                                 mo: e.target.checked
                                             }))
-                                        } else if (type === "Tu") {
+                                        } else if (type === "Tue") {
                                             dispatch(setRepeats({
                                                 ...exportData.repeats,
                                                 tu: e.target.checked
                                             }))
-                                        } else if (type === "We") {
+                                        } else if (type === "Wed") {
                                             dispatch(setRepeats({
                                                 ...exportData.repeats,
                                                 we: e.target.checked
@@ -107,6 +107,11 @@ function Cron() {
                                             dispatch(setRepeats({
                                                 ...exportData.repeats,
                                                 fri: e.target.checked
+                                            }))
+                                        } else if  (type === "Sat") {
+                                            dispatch(setRepeats({
+                                                ...exportData.repeats,
+                                                sat: e.target.checked
                                             }))
                                         }
                                     }}

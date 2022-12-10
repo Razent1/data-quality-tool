@@ -86,7 +86,8 @@ const defaultData =
             tu: false,
             we: false,
             thu: false,
-            fri: false
+            fri: false,
+            sat: false
         }
     };
 
