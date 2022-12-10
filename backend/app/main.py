@@ -2,7 +2,14 @@ from fastapi import FastAPI
 from datetime import datetime
 from databricks import sql
 import os
+import requests
 from fastapi.middleware.cors import CORSMiddleware
+
+SERVER_HOST: str = "dbc-18975113-1ba6.cloud.databricks.com"
+HTTP_PATH: str = "/sql/1.0/warehouses/33b05f27aa211816"
+ACCESS_TOKEN: str = "dapifb287f87a839119fa623206a5c545a0d"
+NOTEBOOK_PATH: str = "/Users/ilya.rozentul@myobligo.com/diplom/checker"
+CLUSTER_ID: str = "0502-062208-z7pwtwc3"
 
 app = FastAPI()
 
@@ -20,6 +27,56 @@ app.add_middleware(
 )
 
 
+async def dbfs_rpc(action, body):
+    """ A helper function to make the DBFS API request, request/response is encoded/decoded as JSON """
+    response = requests.post(
+        action,
+        headers={'Authorization': 'Bearer %s' % ACCESS_TOKEN},
+        json=body
+    )
+    return response.json()
+
+
+def scheduler_parser(time, interval, repeats):
+    hour, min = time.split(':')
+
+    if interval == 'Every Hour':
+        return f"50 {min} * * * ?"
+    elif interval == 'Every Day':
+        return f"50 {min} {hour} * * ?"
+    elif interval == 'Every Month':
+        return f"50 {min} {hour} 1 * ?"
+    elif repeats['su'] or repeats['mo'] or repeats['tu'] or repeats['we'] or repeats['thu'] or repeats['fri'] or \
+            repeats['sat']:
+        days = [repeats['su'], repeats['mo'], repeats['tu'], repeats['we'], repeats['thu'], repeats['fri'],
+                repeats['sat']]
+        day_week_concat = ""
+        for num_day, day in enumerate(days):
+            if num_day == 0 and day:
+                day_week_concat.join('Sun')
+            if num_day == 1 and day:
+                day_week_concat.join(',Mon')
+            if num_day == 2 and day:
+                day_week_concat.join(',Tue')
+            if num_day == 3 and day:
+                day_week_concat.join(',Wed')
+            if num_day == 4 and day:
+                day_week_concat.join(',Thu')
+            if num_day == 5 and day:
+                day_week_concat.join(',Fri')
+            if num_day == 6 and day:
+                day_week_concat.join(',Sat')
+
+        if day_week_concat != '':
+            return f"50 {min} {hour} ? * {day_week_concat}"
+    elif interval == 'Every Week':
+        return f"50 {min} {hour} ? * Mon"
+    else:
+        return None
+
+
+
+
 
 
 @app.get("/databases", tags=["Tables"])
@@ -28,9 +85,9 @@ async def get_databases() -> list:
     Get the databases from Databricks
     """
     connection = sql.connect(
-        server_hostname="dbc-18975113-1ba6.cloud.databricks.com",
-        http_path="/sql/1.0/warehouses/33b05f27aa211816",
-        access_token="dapifb287f87a839119fa623206a5c545a0d")
+        server_hostname=SERVER_HOST,
+        http_path=HTTP_PATH,
+        access_token=ACCESS_TOKEN)
 
     cursor = connection.cursor()
 
@@ -44,6 +101,7 @@ async def get_databases() -> list:
     connection.close()
     return res
 
+
 @app.post("/tables", tags=["tables"])
 async def get_tables(db: dict) -> list:
     """
@@ -51,9 +109,9 @@ async def get_tables(db: dict) -> list:
     """
 
     connection = sql.connect(
-        server_hostname="dbc-18975113-1ba6.cloud.databricks.com",
-        http_path="/sql/protocolv1/o/2520309401638937/0502-062208-z7pwtwc3",
-        access_token="dapifb287f87a839119fa623206a5c545a0d")
+        server_hostname=SERVER_HOST,
+        http_path=HTTP_PATH,
+        access_token=ACCESS_TOKEN)
 
     cursor = connection.cursor()
 
@@ -66,10 +124,60 @@ async def get_tables(db: dict) -> list:
 
 
 @app.post("/send_checker", tags=["send_job_info"])
-async def send_checker(info: dict) -> None:
+async def send_checker(info: dict):
     """
        Send parameter for checker
     """
 
-    return info
+    checker_name: str = info["checkerName"]
+    db_name: str = info["db"]
+    table_name: str = info["table"]
+    checkers: str = str(info["checker"])
+    filtration_condition = info["filtrationCondition"]
+    time: str = info["time"]
+    interval: str = info["interval"]
+    repeats: str = eval(str(info["repeats"]))
 
+    cron = scheduler_parser(time, interval, repeats)
+    url_api = f'https://{SERVER_HOST}/api/2.1/jobs/create'
+    body = {
+        "name": checker_name,
+        "tasks": [
+            {
+                "task_key": checker_name,
+                "notebook_task": {
+                    "notebook_path": NOTEBOOK_PATH,
+                    "base_parameters": {
+                        "db": db_name,
+                        "table": table_name,
+                        "checkers": checkers,
+                        "filtration_condition": filtration_condition
+                    },
+                    "source": "WORKSPACE"
+                },
+                "existing_cluster_id": CLUSTER_ID
+            }],
+        #              "email_notifications": {
+        #                "on_start": [
+        #                  "user.name@databricks.com"
+        #                ],
+        #                "on_success": [
+        #                  "user.name@databricks.com"
+        #                ],
+        #                "on_failure": [
+        #                  "user.name@databricks.com"
+        #                ],
+        #                "no_alert_for_skipped_runs": false
+        #              },
+        "schedule": {
+            "quartz_cron_expression": f"{cron}",
+            "timezone_id": "Europe/London",
+            # "pause_status": "PAUSED"
+        },
+        "max_concurrent_runs": 1,
+        "format": "MULTI_TASK",
+    }
+
+    response = await dbfs_rpc(url_api, body)
+
+    return response
