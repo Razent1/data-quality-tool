@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI
 from datetime import datetime
 from databricks import sql
@@ -41,11 +43,11 @@ def scheduler_parser(time, interval, repeats):
     hour, min = time.split(':')
 
     if interval == 'Every Hour':
-        return f"50 {min} * * * ?"
+        return f"0 {min} * * * ?"
     elif interval == 'Every Day':
-        return f"50 {min} {hour} * * ?"
+        return f"0 {min} {hour} * * ?"
     elif interval == 'Every Month':
-        return f"50 {min} {hour} 1 * ?"
+        return f"0 {min} {hour} 1 * ?"
     elif repeats['su'] or repeats['mo'] or repeats['tu'] or repeats['we'] or repeats['thu'] or repeats['fri'] or \
             repeats['sat']:
         days = [repeats['su'], repeats['mo'], repeats['tu'], repeats['we'], repeats['thu'], repeats['fri'],
@@ -53,24 +55,45 @@ def scheduler_parser(time, interval, repeats):
         day_week_concat = ""
         for num_day, day in enumerate(days):
             if num_day == 0 and day:
-                day_week_concat.join('Sun')
+                if day_week_concat == '':
+                    day_week_concat += 'Sun'
+                else:
+                    day_week_concat += ',Sun'
             if num_day == 1 and day:
-                day_week_concat.join(',Mon')
+                if day_week_concat == '':
+                    day_week_concat += 'Mon'
+                else:
+                    day_week_concat += ',Mon'
             if num_day == 2 and day:
-                day_week_concat.join(',Tue')
+                if day_week_concat == '':
+                    day_week_concat += 'Tue'
+                else:
+                    day_week_concat += ',Tue'
             if num_day == 3 and day:
-                day_week_concat.join(',Wed')
+                if day_week_concat == '':
+                    day_week_concat += 'Wed'
+                else:
+                    day_week_concat += ',Wed'
             if num_day == 4 and day:
-                day_week_concat.join(',Thu')
+                if day_week_concat == '':
+                    day_week_concat += 'Thu'
+                else:
+                    day_week_concat += ',Thu'
             if num_day == 5 and day:
-                day_week_concat.join(',Fri')
+                if day_week_concat == '':
+                    day_week_concat += 'Fri'
+                else:
+                    day_week_concat += ',Fri'
             if num_day == 6 and day:
-                day_week_concat.join(',Sat')
+                if day_week_concat == '':
+                    day_week_concat += 'Sat'
+                else:
+                    day_week_concat += ',Sat'
 
         if day_week_concat != '':
-            return f"50 {min} {hour} ? * {day_week_concat}"
+            return f"0 {min} {hour} ? * {day_week_concat}"
     elif interval == 'Every Week':
-        return f"50 {min} {hour} ? * Mon"
+        return f"0 {min} {hour} ? * Mon"
     else:
         return None
 

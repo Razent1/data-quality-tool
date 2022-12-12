@@ -4,14 +4,13 @@ import 'bootstrap/dist/css/bootstrap.css';
 
 import {useState, useEffect} from "react";
 import TimePicker from 'react-time-picker';
-import {ThemeProvider, createTheme} from '@mui/material/styles';
 import {purple} from '@mui/material/colors';
 import Form from "react-bootstrap/Form";
 import {setRepeats, setTime, setInterval} from './store/exportData/exportData';
 import {useDispatch, useSelector} from "react-redux";
 
 function Cron() {
-    const [value, onChange] = useState('10:00');
+    const [value, setDate] = useState("10:00");
     const [typeInfo, setTypeInfo] = useState('');
     const [typeWeek, setTypeWeek] = useState({
         sun: false,
@@ -31,7 +30,13 @@ function Cron() {
             </div>
             <div className="row" style={{marginBottom: '30px'}}>
                 <div className="col-8">Choose the time of checking</div>
-                <TimePicker onChange={onChange} value={value} className="col"/>
+                <TimePicker onChange={(date) => {
+                    // const d = new Date(date).toLocaleDateString('fr-FR');
+                    // console.log(d);
+                    setDate(date);
+                    dispatch(setTime(date));
+                    console.log(exportData);
+                }} value={value} className="col"/>
             </div>
             <div className="dropdownBlock" style={{borderBottom: "1px solid black"}}>
                 <Form>
@@ -46,16 +51,16 @@ function Cron() {
                                     onClick={(e) => {
                                         if (type === "Every Hour") {
                                             dispatch(setInterval(type));
-                                            dispatch(setTime(value));
+                                            // dispatch(setTime(value));
                                         } else if (type === "Every Day") {
                                             dispatch(setInterval(type));
-                                            dispatch(setTime(value));
+                                            // dispatch(setTime(value));
                                         } else if (type === "Every Week") {
                                             dispatch(setInterval(type));
-                                            dispatch(setTime(value));
+                                            // dispatch(setTime(value));
                                         } else if (type === "Every Month") {
                                             dispatch(setInterval(type));
-                                            dispatch(setTime(value));
+                                            // dispatch(setTime(value));
                                         }
                                     }}
                                 />
