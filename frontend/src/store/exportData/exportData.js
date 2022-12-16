@@ -2,6 +2,11 @@ import {combineReducers} from 'redux';
 
 const SET_DB = 'SET_DB';
 const SET_TABLE = 'SET_TABLE';
+const SET_ALL_COLUMNS = 'SET_ALL_COLUMNS'
+const SET_COLUMNS = 'SET_COLUMNS';
+const DELETE_COLUMNS = 'DELETE_COLUMNS'
+const SET_NULL_COLUMNS = 'SET_NULL_COLUMNS'
+const DELETE_NULL_COLUMNS = 'DELETE_NULL_COLUMNS'
 const SET_CHECKERS = 'SET_CHECKERS';
 const SET_TIME = 'SET_TIME';
 const SET_CHECKER_NAME = 'SET_CHECKER_NAME';
@@ -20,6 +25,41 @@ export function setTable(table) {
     return {
         type: SET_TABLE,
         table
+    }
+}
+
+export function setAllColumns(allColumns) {
+    return {
+        type: SET_ALL_COLUMNS,
+        allColumns
+    }
+}
+
+export function setColumns(columns) {
+    return {
+        type: SET_COLUMNS,
+        columns
+    }
+}
+
+export function deleteColumns(deletedColumns) {
+    return {
+        type: DELETE_COLUMNS,
+        deletedColumns
+    }
+}
+
+export function setNullColumns(nullColumns) {
+    return {
+        type: SET_NULL_COLUMNS,
+        nullColumns
+    }
+}
+
+export function deleteNullColumns(deletedNullColumns) {
+    return {
+        type: DELETE_NULL_COLUMNS,
+        deletedNullColumns
     }
 }
 
@@ -69,6 +109,9 @@ const defaultData =
     {
         db: null,
         table: null,
+        allColumns: null,
+        columns: [],
+        nullColumns: [],
         checker: {
             duplication: false,
             nullCols: false,
@@ -104,6 +147,57 @@ function data(state = defaultData, action) {
                 {
                     ...state,
                     table: action.table
+                }
+            )
+        case SET_ALL_COLUMNS:
+            return (
+                {
+                    ...state,
+                    allColumns: action.allColumns
+                }
+            )
+        case SET_COLUMNS:
+            if (Array.isArray(action.columns) && action.columns.length === 0) {
+                state.columns = [];
+            } else {
+                if (!state.columns.includes(action.columns)) {
+                    state.columns.push(action.columns);
+                }
+            }
+            return (
+                {
+                    ...state,
+                    columns: state.columns
+                }
+            )
+        case DELETE_COLUMNS:
+            const filteredColumns = state.columns.filter((col) => col !== action.deletedColumns);
+            return (
+                {
+                    ...state,
+                    columns: filteredColumns
+                }
+            )
+        case SET_NULL_COLUMNS:
+            if (Array.isArray(action.nullColumns) && action.nullColumns.length === 0) {
+                state.nullColumns = [];
+            } else {
+                if (!state.nullColumns.includes(action.nullColumns)) {
+                    state.nullColumns.push(action.nullColumns);
+                }
+            }
+            return (
+                {
+                    ...state,
+                    nullColumns: state.nullColumns
+                }
+            )
+        case DELETE_NULL_COLUMNS:
+            const filteredNullColumns = state.nullColumns.filter((col) => col !== action.deletedNullColumns);
+            return (
+                {
+                    ...state,
+                    nullColumns: filteredNullColumns
                 }
             )
         case SET_CHECKERS:

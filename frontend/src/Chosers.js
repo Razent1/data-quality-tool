@@ -6,7 +6,14 @@ import Form from 'react-bootstrap/Form';
 import {useState, useEffect} from "react";
 import {Button} from "react-bootstrap";
 import {useDispatch, useSelector} from 'react-redux';
-import {setDatabase, setTable, setCheckerName, setFiltrationCondition} from './store/exportData/exportData';
+import {
+    setDatabase,
+    setTable,
+    setCheckerName,
+    setFiltrationCondition,
+    setColumns,
+    setAllColumns, setNullColumns
+} from './store/exportData/exportData';
 
 
 function Chosers() {
@@ -109,6 +116,10 @@ function Chosers() {
                                 <Dropdown.Item onClick={() => {
                                     if (itemsDB !== exportData.db) {
                                         dispatch(setDatabase(itemsDB));
+                                        dispatch(setTable(null));
+                                        dispatch(setAllColumns(null));
+                                        dispatch(setColumns([]));
+                                        dispatch(setNullColumns([]));
                                         setReady(false);
                                     }
                                 }}>
@@ -133,7 +144,12 @@ function Chosers() {
                             {exportData.db === null && <Dropdown.Item> Database not selected </Dropdown.Item>}
                             {(!ready && exportData.db !== null) && <Dropdown.Item> Loading... </Dropdown.Item>}
                             {ready && dbSchemas.map((dbSchema) => (
-                                <Dropdown.Item onClick={() => dispatch(setTable(dbSchema))}>
+                                <Dropdown.Item onClick={() => {
+                                    dispatch(setTable(dbSchema));
+                                    dispatch(setAllColumns(null));
+                                    dispatch(setColumns([]));
+                                    dispatch(setNullColumns([]));
+                                }}>
                                     {dbSchema}
                                 </Dropdown.Item>
                             ))}

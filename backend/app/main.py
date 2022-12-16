@@ -7,11 +7,11 @@ import os
 import requests
 from fastapi.middleware.cors import CORSMiddleware
 
-SERVER_HOST: str = "dbc-18975113-1ba6.cloud.databricks.com"
-HTTP_PATH: str = "/sql/1.0/warehouses/33b05f27aa211816"
-ACCESS_TOKEN: str = "dapifb287f87a839119fa623206a5c545a0d"
-NOTEBOOK_PATH: str = "/Users/ilya.rozentul@myobligo.com/diplom/checker"
-CLUSTER_ID: str = "0502-062208-z7pwtwc3"
+SERVER_HOST: str = os.environ['SERVER_HOST']
+HTTP_PATH: str = os.environ['HTTP_PATH']
+ACCESS_TOKEN: str = os.environ['TOKEN']
+NOTEBOOK_PATH: str = os.environ["NOTEBOOK_PATH"]
+CLUSTER_ID: str = os.environ["CLUSTER_ID"]
 
 app = FastAPI()
 
@@ -128,7 +128,7 @@ async def get_databases() -> list:
 @app.post("/tables", tags=["tables"])
 async def get_tables(db: dict) -> list:
     """
-        Get Tables from choosing db
+        Get Tables from db
     """
 
     connection = sql.connect(
@@ -144,6 +144,33 @@ async def get_tables(db: dict) -> list:
     cursor.close()
     connection.close()
     return [tbl[1] for tbl in tables]
+
+
+@app.post("/columns", tags=["columns"])
+async def get_columns(schema: dict):
+    """
+        Get columns from the table
+    """
+
+    connection = sql.connect(
+        server_hostname=SERVER_HOST,
+        http_path=HTTP_PATH,
+        access_token=ACCESS_TOKEN
+    )
+
+    cursor = connection.cursor()
+
+    cursor.execute(f"SHOW COLUMNS IN {schema['db']}.{schema['table']}")
+
+    columns = cursor.fetchall()
+    res = []
+    for col in columns:
+        res.extend(col)
+
+    cursor.close()
+    connection.close()
+    return res
+
 
 
 @app.post("/send_checker", tags=["send_job_info"])
@@ -180,22 +207,9 @@ async def send_checker(info: dict):
                 },
                 "existing_cluster_id": CLUSTER_ID
             }],
-        #              "email_notifications": {
-        #                "on_start": [
-        #                  "user.name@databricks.com"
-        #                ],
-        #                "on_success": [
-        #                  "user.name@databricks.com"
-        #                ],
-        #                "on_failure": [
-        #                  "user.name@databricks.com"
-        #                ],
-        #                "no_alert_for_skipped_runs": false
-        #              },
         "schedule": {
             "quartz_cron_expression": f"{cron}",
-            "timezone_id": "Europe/London",
-            # "pause_status": "PAUSED"
+            "timezone_id": "Europe/London"
         },
         "max_concurrent_runs": 1,
         "format": "MULTI_TASK",
