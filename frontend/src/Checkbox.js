@@ -134,52 +134,102 @@ function Checkbox() {
         )
     };
 
-    const selectorOnChangeActuality = (newValue, actionMeta) => {
-        if (exportData.checker.actualitySimple) {
-            dispatch(setActuality({
-                actualityDifficulty: exportData.actuality.actualityDifficulty,
-                actualitySimple: newValue.value}));
-        }
-        if (exportData.checker.actualityDifficulty) {
-            dispatch(setActuality({
-                actualitySimple: exportData.actuality.actualitySimple,
-                actualityDifficulty: newValue.value}));
+    // const selectorOnChangeActuality = (newValue, actionMeta) => {
+    //     if (exportData.checker.actualitySimple) {
+    //         dispatch(setActuality({
+    //             actualitySimple: newValue.value,
+    //             actualityDifficulty: exportData.actuality.actualityDifficulty
+    //         }));
+    //     }
+    //     if (exportData.checker.actualityDifficulty) {
+    //         dispatch(setActuality({
+    //             actualitySimple: exportData.actuality.actualitySimple,
+    //             actualityDifficulty: newValue.value
+    //         }));
+    //     }
+    // }
+
+    const selectorOnChangeActualitySimple = (newValue, actionMeta) => {
+        dispatch(setActuality({
+            actualitySimple: newValue.value,
+            actualityDifficulty: exportData.actuality.actualityDifficulty
+        }));
+    }
+
+    const selectorOnChangeActualityDifficulty = (newValue, actionMeta) => {
+        dispatch(setActuality({
+            actualitySimple: exportData.actuality.actualitySimple,
+            actualityDifficulty: newValue.value
+        }));
+    }
+
+    const selectorActualitySimple = () => {
+        if (exportData.checker.actualitySimple && exportData.allColumns === null && exportData.db !== null
+            && exportData.table !== null) {
+            return (<Dropdown.Item> Loading... </Dropdown.Item>)
+        } else if (exportData.checker.actualitySimple && exportData.allColumns !== null) {
+            return (
+                <Select
+                    className="basic-single"
+                    classNamePrefix="select"
+                    name="actuality_simple"
+                    options={exportData.allColumns.map((col) => ({value: col, label: col}))}
+                    onChange={selectorOnChangeActualitySimple}
+                />
+            )
         }
     }
 
-    const selectorActuality = (actualityType) => {
-        if (actualityType === 'Simple') {
-            if (exportData.checker.actualitySimple && exportData.allColumns === null && exportData.db !== null
-                && exportData.table !== null) {
-                return (<Dropdown.Item> Loading... </Dropdown.Item>)
-            } else if (exportData.checker.actualitySimple && exportData.allColumns !== null) {
-                return (
-                    <Select
-                        className="basic-single"
-                        classNamePrefix="select"
-                        name="actuality_simple"
-                        options={exportData.allColumns.map((col) => ({value: col, label: col}))}
-                        onChange={selectorOnChangeActuality}
-                    />
-                )
-            }
-        } else {
-            if (exportData.checker.actualityDifficulty && exportData.allColumns === null && exportData.db !== null
-                && exportData.table !== null) {
-                return (<Dropdown.Item> Loading... </Dropdown.Item>)
-            } else if (exportData.checker.actualityDifficulty && exportData.allColumns !== null) {
-                return (
-                    <Select
-                        className="basic-single"
-                        classNamePrefix="select"
-                        name="actuality_difficulty"
-                        options={exportData.allColumns.map((col) => ({value: col, label: col}))}
-                        onChange={selectorOnChangeActuality}
-                    />
-                )
-            }
+    const selectorActualityDifficulty = () => {
+        if (exportData.checker.actualityDifficulty && exportData.allColumns === null && exportData.db !== null
+            && exportData.table !== null) {
+            return (<Dropdown.Item> Loading... </Dropdown.Item>)
+        } else if (exportData.checker.actualityDifficulty && exportData.allColumns !== null) {
+            return (
+                <Select
+                    className="basic-single"
+                    classNamePrefix="select"
+                    name="actuality_difficulty"
+                    options={exportData.allColumns.map((col) => ({value: col, label: col}))}
+                    onChange={selectorOnChangeActualityDifficulty}
+                />
+            )
         }
     }
+
+    // const selectorActuality = (actualityType) => {
+    //     if (actualityType === 'Simple') {
+    //         if (exportData.checker.actualitySimple && exportData.allColumns === null && exportData.db !== null
+    //             && exportData.table !== null) {
+    //             return (<Dropdown.Item> Loading... </Dropdown.Item>)
+    //         } else if (exportData.checker.actualitySimple && exportData.allColumns !== null) {
+    //             return (
+    //                 <Select
+    //                     className="basic-single"
+    //                     classNamePrefix="select"
+    //                     name="actuality_simple"
+    //                     options={exportData.allColumns.map((col) => ({value: col, label: col}))}
+    //                     onChange={selectorOnChangeActuality}
+    //                 />
+    //             )
+    //         }
+    //     } else {
+    //         if (exportData.checker.actualityDifficulty && exportData.allColumns === null && exportData.db !== null
+    //             && exportData.table !== null) {
+    //             return (<Dropdown.Item> Loading... </Dropdown.Item>)
+    //         } else if (exportData.checker.actualityDifficulty && exportData.allColumns !== null) {
+    //             return (
+    //                 <Select
+    //                     className="basic-single"
+    //                     classNamePrefix="select"
+    //                     name="actuality_difficulty"
+    //                     options={exportData.allColumns.map((col) => ({value: col, label: col}))}
+    //                     onChange={selectorOnChangeActuality}
+    //                 />
+    //             )
+    //         }
+    //     }
+    // }
 
     return (
         <div style={{marginTop: '25px', marginLeft: '55px'}}>
@@ -223,7 +273,8 @@ function Checkbox() {
                                                 }));
                                                 dispatch(setActuality({
                                                     actualitySimple: null,
-                                                    actualityDifficulty: exportData.actuality.actualityDifficulty}))
+                                                    actualityDifficulty: exportData.actuality.actualityDifficulty
+                                                }))
                                             } else if (type === "Actuality Difficulty") {
                                                 dispatch(setCheckers({
                                                     ...exportData.checker,
@@ -231,18 +282,19 @@ function Checkbox() {
                                                 }));
                                                 dispatch(setActuality({
                                                     actualitySimple: exportData.actuality.actualitySimple,
-                                                    actualityDifficulty: null}))
+                                                    actualityDifficulty: null
+                                                }))
                                             }
                                         }}
                                     />
                                     {type === 'Duplications' && duplicationColsSelector()}
                                     {type === 'Null in Columns' && nullColsSelector()}
-                                    {type === 'Actuality Simple' && selectorActuality("Simple")}
-                                    {type === 'Actuality Difficulty' && selectorActuality("Difficulty")}
+                                    {type === 'Actuality Simple' && selectorActualitySimple()}
+                                    {type === 'Actuality Difficulty' && selectorActualityDifficulty()}
                                 </div>
                             ))}
                     </Form>
-                    {console.log(exportData.actuality)}
+                    {/*{console.log(exportData)}*/}
                 </div>
             </div>
         </div>

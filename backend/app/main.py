@@ -187,6 +187,9 @@ async def send_checker(info: dict):
     time: str = info["time"]
     interval: str = info["interval"]
     repeats: str = eval(str(info["repeats"]))
+    columns_duplication: str = str(info["columns"])
+    columns_nulls: str = str(info["nullColumns"])
+    actuality: str = str(info["actuality"])
 
     cron = scheduler_parser(time, interval, repeats)
     url_api = f'https://{SERVER_HOST}/api/2.1/jobs/create'
@@ -201,7 +204,10 @@ async def send_checker(info: dict):
                         "db": db_name,
                         "table": table_name,
                         "checkers": checkers,
-                        "filtration_condition": filtration_condition
+                        "filtration_condition": filtration_condition,
+                        "columns_duplication": columns_duplication,
+                        "columns_nulls": columns_nulls,
+                        "actuality": actuality
                     },
                     "source": "WORKSPACE"
                 },
