@@ -12,7 +12,7 @@ import {
     setCheckerName,
     setFiltrationCondition,
     setColumns,
-    setAllColumns, setNullColumns
+    setAllColumns, setNullColumns, setActuality
 } from './store/exportData/exportData';
 
 
@@ -120,6 +120,9 @@ function Chosers() {
                                         dispatch(setAllColumns(null));
                                         dispatch(setColumns([]));
                                         dispatch(setNullColumns([]));
+                                        dispatch(setActuality({
+                                            actualitySimple: null,
+                                            actualityDifficulty: null}))
                                         setReady(false);
                                     }
                                 }}>
@@ -149,13 +152,16 @@ function Chosers() {
                                     dispatch(setAllColumns(null));
                                     dispatch(setColumns([]));
                                     dispatch(setNullColumns([]));
+                                    dispatch(setActuality({
+                                        actualitySimple: null,
+                                        actualityDifficulty: null}))
                                 }}>
                                     {dbSchema}
                                 </Dropdown.Item>
                             ))}
                         </Dropdown.Menu>
                     </Dropdown>
-                    <pre>Defualt selected Schema: {exportData.table}</pre>
+                    <pre>Selected table: {exportData.table}</pre>
                 </div>
                 <div className="dropdownBlock">
                     <Form.Label htmlFor="nameChecker">Name of Checker</Form.Label>

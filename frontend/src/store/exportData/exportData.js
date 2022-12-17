@@ -7,6 +7,7 @@ const SET_COLUMNS = 'SET_COLUMNS';
 const DELETE_COLUMNS = 'DELETE_COLUMNS'
 const SET_NULL_COLUMNS = 'SET_NULL_COLUMNS'
 const DELETE_NULL_COLUMNS = 'DELETE_NULL_COLUMNS'
+const SET_ACTUALITY = 'SET_ACTUALITY'
 const SET_CHECKERS = 'SET_CHECKERS';
 const SET_TIME = 'SET_TIME';
 const SET_CHECKER_NAME = 'SET_CHECKER_NAME';
@@ -63,6 +64,13 @@ export function deleteNullColumns(deletedNullColumns) {
     }
 }
 
+export function setActuality(actuality) {
+    return {
+        type: SET_ACTUALITY,
+        actuality
+    }
+}
+
 export function setCheckers(checker) {
     return {
         type: SET_CHECKERS,
@@ -112,6 +120,7 @@ const defaultData =
         allColumns: null,
         columns: [],
         nullColumns: [],
+        actuality: {actualitySimple: null, actualityDifficulty: null},
         checker: {
             duplication: false,
             nullCols: false,
@@ -200,6 +209,18 @@ function data(state = defaultData, action) {
                     nullColumns: filteredNullColumns
                 }
             )
+        case SET_ACTUALITY:
+            const newActuality = {
+                actualitySimple: action.actuality['actualitySimple'],
+                actualityDifficulty: action.actuality['actualityDifficulty']
+            }
+            return (
+                {
+                    ...state,
+                    actuality: newActuality
+                }
+            )
+
         case SET_CHECKERS:
             return (
                 {

@@ -4,7 +4,15 @@ import classnames from 'classnames';
 
 import Form from 'react-bootstrap/Form';
 import {useEffect, useState} from "react";
-import {setCheckers, setAllColumns, setColumns, deleteColumns, setNullColumns, deleteNullColumns} from './store/exportData/exportData';
+import {
+    setCheckers,
+    setAllColumns,
+    setColumns,
+    deleteColumns,
+    setNullColumns,
+    deleteNullColumns,
+    setActuality
+} from './store/exportData/exportData';
 import {useDispatch, useSelector} from "react-redux";
 import {Dropdown} from "react-bootstrap";
 import Select, {ActionMeta, OnChangeValue, StylesConfig} from 'react-select'
@@ -15,7 +23,10 @@ function Checkbox() {
 
     useEffect(() => {
         async function fetchColumns() {
-            if ((exportData.checker.duplication === true || exportData.checker.nullCols)
+            if ((exportData.checker.duplication
+                    || exportData.checker.nullCols
+                    || exportData.checker.actualitySimple
+                    || exportData.checker.actualityDifficulty)
                 && exportData.db !== null && exportData.table !== null) {
                 fetch("api/columns", {
                     method: "POST",
@@ -26,8 +37,14 @@ function Checkbox() {
                     .then(response => dispatch(setAllColumns(response)))
             }
         }
+
         fetchColumns();
-    }, [exportData.checker.duplication, exportData.db, exportData.table, exportData.checker.nullCols]);
+    }, [exportData.checker.duplication,
+        exportData.db,
+        exportData.table,
+        exportData.checker.nullCols,
+        exportData.checker.actualitySimple,
+        exportData.checker.actualityDifficulty]);
 
     const selectorOnChangeDedup = (
         newValue,
@@ -75,6 +92,95 @@ function Checkbox() {
 
     };
 
+    const duplicationColsSelector = () => {
+        return (
+            <div>
+                {exportData.checker.duplication && exportData.allColumns === null && exportData.db !== null
+                    && exportData.table !== null
+                    && <Dropdown.Item> Loading... </Dropdown.Item>}
+                {exportData.checker.duplication && exportData.allColumns !== null &&
+                    <div>
+                        <Select isMulti
+                                name="Select_columns"
+                                options={exportData.allColumns.map((col) => ({value: col, label: col}))}
+                                className="basic-multi-select"
+                                classNamePrefix="select"
+                                onChange={selectorOnChangeDedup}
+                        />
+                    </div>
+                }
+            </div>
+        )
+    };
+
+    const nullColsSelector = () => {
+        return (
+            <div>
+                {exportData.checker.nullCols && exportData.allColumns === null && exportData.db !== null
+                    && exportData.table !== null
+                    && <Dropdown.Item> Loading... </Dropdown.Item>}
+                {exportData.checker.nullCols === true && exportData.allColumns !== null &&
+                    <div>
+                        <Select isMulti
+                                name="Select_columns"
+                                options={exportData.allColumns.map((col) => ({value: col, label: col}))}
+                                className="basic-multi-select"
+                                classNamePrefix="select"
+                                onChange={selectorOnChangeNulls}
+                        />
+                    </div>
+                }
+            </div>
+        )
+    };
+
+    const selectorOnChangeActuality = (newValue, actionMeta) => {
+        if (exportData.checker.actualitySimple) {
+            dispatch(setActuality({
+                actualityDifficulty: exportData.actuality.actualityDifficulty,
+                actualitySimple: newValue.value}));
+        }
+        if (exportData.checker.actualityDifficulty) {
+            dispatch(setActuality({
+                actualitySimple: exportData.actuality.actualitySimple,
+                actualityDifficulty: newValue.value}));
+        }
+    }
+
+    const selectorActuality = (actualityType) => {
+        if (actualityType === 'Simple') {
+            if (exportData.checker.actualitySimple && exportData.allColumns === null && exportData.db !== null
+                && exportData.table !== null) {
+                return (<Dropdown.Item> Loading... </Dropdown.Item>)
+            } else if (exportData.checker.actualitySimple && exportData.allColumns !== null) {
+                return (
+                    <Select
+                        className="basic-single"
+                        classNamePrefix="select"
+                        name="actuality_simple"
+                        options={exportData.allColumns.map((col) => ({value: col, label: col}))}
+                        onChange={selectorOnChangeActuality}
+                    />
+                )
+            }
+        } else {
+            if (exportData.checker.actualityDifficulty && exportData.allColumns === null && exportData.db !== null
+                && exportData.table !== null) {
+                return (<Dropdown.Item> Loading... </Dropdown.Item>)
+            } else if (exportData.checker.actualityDifficulty && exportData.allColumns !== null) {
+                return (
+                    <Select
+                        className="basic-single"
+                        classNamePrefix="select"
+                        name="actuality_difficulty"
+                        options={exportData.allColumns.map((col) => ({value: col, label: col}))}
+                        onChange={selectorOnChangeActuality}
+                    />
+                )
+            }
+        }
+    }
+
     return (
         <div style={{marginTop: '25px', marginLeft: '55px'}}>
             <div className="headings" style={{marginBottom: '20px'}}>
@@ -97,12 +203,14 @@ function Checkbox() {
                                                     duplication: e.target.checked
                                                 }));
                                                 dispatch(setColumns([]));
+                                                // duplicationColsSelector();
                                             } else if (type === "Null in Columns") {
                                                 dispatch(setCheckers({
                                                     ...exportData.checker,
                                                     nullCols: e.target.checked
                                                 }));
                                                 dispatch(setNullColumns([]));
+                                                // nullColsSelector();
                                             } else if (type === "Count of rows") {
                                                 dispatch(setCheckers({
                                                     ...exportData.checker,
@@ -112,52 +220,29 @@ function Checkbox() {
                                                 dispatch(setCheckers({
                                                     ...exportData.checker,
                                                     actualitySimple: e.target.checked
-                                                }))
+                                                }));
+                                                dispatch(setActuality({
+                                                    actualitySimple: null,
+                                                    actualityDifficulty: exportData.actuality.actualityDifficulty}))
                                             } else if (type === "Actuality Difficulty") {
                                                 dispatch(setCheckers({
                                                     ...exportData.checker,
                                                     actualityDifficulty: e.target.checked
-                                                }))
+                                                }));
+                                                dispatch(setActuality({
+                                                    actualitySimple: exportData.actuality.actualitySimple,
+                                                    actualityDifficulty: null}))
                                             }
                                         }}
                                     />
+                                    {type === 'Duplications' && duplicationColsSelector()}
+                                    {type === 'Null in Columns' && nullColsSelector()}
+                                    {type === 'Actuality Simple' && selectorActuality("Simple")}
+                                    {type === 'Actuality Difficulty' && selectorActuality("Difficulty")}
                                 </div>
                             ))}
                     </Form>
-                </div>
-                <div className="col">
-                    <div>
-                        {exportData.checker.duplication === true && exportData.allColumns === null && exportData.db !== null
-                            && exportData.table !== null
-                            && <Dropdown.Item> Loading... </Dropdown.Item>}
-                        {exportData.checker.duplication === true && exportData.allColumns !== null &&
-                            <div>
-                                <Select isMulti
-                                        name="Select_columns"
-                                        options={exportData.allColumns.map((col) => ({value: col, label: col}))}
-                                        className="basic-multi-select"
-                                        classNamePrefix="select"
-                                        onChange={selectorOnChangeDedup}
-                                />
-                            </div>
-                        }
-                    </div>
-                    <div style={{marginTop: '35px'}}>
-                        {exportData.checker.nullCols === true && exportData.allColumns === null && exportData.db !== null
-                            && exportData.table !== null
-                            && <Dropdown.Item> Loading... </Dropdown.Item>}
-                        {exportData.checker.nullCols === true && exportData.allColumns !== null &&
-                            <div>
-                                <Select isMulti
-                                        name="Select_columns"
-                                        options={exportData.allColumns.map((col) => ({value: col, label: col}))}
-                                        className="basic-multi-select"
-                                        classNamePrefix="select"
-                                        onChange={selectorOnChangeNulls}
-                                />
-                            </div>
-                        }
-                    </div>
+                    {console.log(exportData.actuality)}
                 </div>
             </div>
         </div>
