@@ -14,6 +14,11 @@ const SET_CHECKER_NAME = 'SET_CHECKER_NAME';
 const SET_FILTRATION_CONDITION = 'SET_FILTRATION_CONDITION';
 const SET_REPEATS = 'SET_REPEATS';
 const SET_INTERVAL = 'INTERVAL';
+const SET_PERIOD_ROWS = 'SET_PERIOD_ROWS';
+const SET_PERIOD_ACTUALITY = 'SET_PERIOD_ACTUALITY';
+const SET_ROW_COLUMN = 'SET_ROW_COLUMN';
+const SET_IS_SUBMITTED = 'SET_IS_SUBMITTED';
+
 
 export function setDatabase(db) {
     return {
@@ -113,6 +118,34 @@ export function setInterval(interval) {
     }
 }
 
+export function setPeriodActuality(periodActuality) {
+    return {
+        type: SET_PERIOD_ACTUALITY,
+        periodActuality
+    }
+}
+
+export function setPeriodRows(periodRows) {
+    return {
+        type: SET_PERIOD_ROWS,
+        periodRows
+    }
+}
+
+export function setRowColumn(rowColumn) {
+    return {
+        type: SET_ROW_COLUMN,
+        rowColumn
+    }
+}
+
+export function setIsSubmitted(isSubmitted) {
+    return {
+        type: SET_IS_SUBMITTED,
+        isSubmitted
+    }
+}
+
 const defaultData =
     {
         db: null,
@@ -121,6 +154,9 @@ const defaultData =
         columns: [],
         nullColumns: [],
         actuality: {actualitySimple: null, actualityDifficulty: null},
+        rowColumn: null,
+        periodActuality: 1,
+        periodRows: 1,
         checker: {
             duplication: false,
             nullCols: false,
@@ -140,7 +176,8 @@ const defaultData =
             thu: false,
             fri: false,
             sat: false
-        }
+        },
+        isSubmitted: false
     };
 
 function data(state = defaultData, action) {
@@ -261,6 +298,34 @@ function data(state = defaultData, action) {
                 {
                     ...state,
                     repeats: action.repeats
+                }
+            )
+        case SET_PERIOD_ACTUALITY:
+            return (
+                {
+                    ...state,
+                    periodActuality: action.periodActuality
+                }
+            )
+        case SET_PERIOD_ROWS:
+            return (
+                {
+                    ...state,
+                    periodRows: action.periodRows
+                }
+            )
+        case SET_ROW_COLUMN:
+            return (
+                {
+                    ...state,
+                    rowColumn: action.rowColumn
+                }
+            )
+        case SET_IS_SUBMITTED:
+            return (
+                {
+                    ...state,
+                    isSubmitted: action.isSubmitted
                 }
             )
         default:

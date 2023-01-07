@@ -98,10 +98,6 @@ def scheduler_parser(time, interval, repeats):
         return None
 
 
-
-
-
-
 @app.get("/databases", tags=["Tables"])
 async def get_databases() -> list:
     """
@@ -172,7 +168,6 @@ async def get_columns(schema: dict):
     return res
 
 
-
 @app.post("/send_checker", tags=["send_job_info"])
 async def send_checker(info: dict):
     """
@@ -190,6 +185,9 @@ async def send_checker(info: dict):
     columns_duplication: str = str(info["columns"])
     columns_nulls: str = str(info["nullColumns"])
     actuality: str = str(info["actuality"])
+    period_actuality: str = str(info["periodActuality"])
+    col_count_rows: str = str(info["rowColumn"])
+    period_count_rows: str = str(info["periodRows"])
 
     cron = scheduler_parser(time, interval, repeats)
     url_api = f'https://{SERVER_HOST}/api/2.1/jobs/create'
@@ -207,7 +205,11 @@ async def send_checker(info: dict):
                         "filtration_condition": filtration_condition,
                         "columns_duplication": columns_duplication,
                         "columns_nulls": columns_nulls,
-                        "actuality": actuality
+                        "actuality": actuality,
+                        "period_actuality": period_actuality,
+                        "col_count_rows": col_count_rows,
+                        "period_count_rows": period_count_rows,
+                        "job_id": "{{job_id}}"
                     },
                     "source": "WORKSPACE"
                 },

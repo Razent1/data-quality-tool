@@ -11,7 +11,7 @@ import {
     deleteColumns,
     setNullColumns,
     deleteNullColumns,
-    setActuality
+    setActuality, setCheckerName, setPeriodActuality, setPeriodRows, setRowColumn
 } from './store/exportData/exportData';
 import {useDispatch, useSelector} from "react-redux";
 import {Dropdown} from "react-bootstrap";
@@ -26,7 +26,8 @@ function Checkbox() {
             if ((exportData.checker.duplication
                     || exportData.checker.nullCols
                     || exportData.checker.actualitySimple
-                    || exportData.checker.actualityDifficulty)
+                    || exportData.checker.actualityDifficulty
+                    || exportData.checker.countRows)
                 && exportData.db !== null && exportData.table !== null) {
                 fetch("api/columns", {
                     method: "POST",
@@ -44,7 +45,8 @@ function Checkbox() {
         exportData.table,
         exportData.checker.nullCols,
         exportData.checker.actualitySimple,
-        exportData.checker.actualityDifficulty]);
+        exportData.checker.actualityDifficulty,
+        exportData.checker.countRows]);
 
     const selectorOnChangeDedup = (
         newValue,
@@ -134,21 +136,6 @@ function Checkbox() {
         )
     };
 
-    // const selectorOnChangeActuality = (newValue, actionMeta) => {
-    //     if (exportData.checker.actualitySimple) {
-    //         dispatch(setActuality({
-    //             actualitySimple: newValue.value,
-    //             actualityDifficulty: exportData.actuality.actualityDifficulty
-    //         }));
-    //     }
-    //     if (exportData.checker.actualityDifficulty) {
-    //         dispatch(setActuality({
-    //             actualitySimple: exportData.actuality.actualitySimple,
-    //             actualityDifficulty: newValue.value
-    //         }));
-    //     }
-    // }
-
     const selectorOnChangeActualitySimple = (newValue, actionMeta) => {
         dispatch(setActuality({
             actualitySimple: newValue.value,
@@ -162,6 +149,47 @@ function Checkbox() {
             actualityDifficulty: newValue.value
         }));
     }
+    const selectorOnChangeRowColumns= (newValue, actionMeta) => {
+        dispatch(setRowColumn(newValue.value));
+    }
+
+    const handleInputChangeActuality = (event) => {
+        const {value} = event.target
+        dispatch(setPeriodActuality(value));
+    }
+
+    const handleInputChangeRows = (event) => {
+        const {value} = event.target
+        dispatch(setPeriodRows(value));
+    }
+
+    const selectorRowColumn = () => {
+        if (exportData.checker.countRows && exportData.allColumns === null && exportData.db !== null
+            && exportData.table !== null) {
+            return (<Dropdown.Item> Loading... </Dropdown.Item>)
+        } else if (exportData.checker.countRows && exportData.allColumns !== null) {
+            return (
+                <div>
+                    <Form.Label htmlFor="periodDays">Choose period of days</Form.Label>
+                    <Form.Control
+                        type="number"
+                        placeholder="Enter period in days"
+                        name="Period Name"
+                        value={exportData.periodRows}
+                        onChange={handleInputChangeRows}
+                    />
+                    <div>Choose column</div>
+                    <Select
+                        className="basic-single"
+                        classNamePrefix="select"
+                        name="actuality_simple"
+                        options={exportData.allColumns.map((col) => ({value: col, label: col}))}
+                        onChange={selectorOnChangeRowColumns}
+                    />
+                </div>
+            )
+        }
+    }
 
     const selectorActualitySimple = () => {
         if (exportData.checker.actualitySimple && exportData.allColumns === null && exportData.db !== null
@@ -169,13 +197,24 @@ function Checkbox() {
             return (<Dropdown.Item> Loading... </Dropdown.Item>)
         } else if (exportData.checker.actualitySimple && exportData.allColumns !== null) {
             return (
-                <Select
-                    className="basic-single"
-                    classNamePrefix="select"
-                    name="actuality_simple"
-                    options={exportData.allColumns.map((col) => ({value: col, label: col}))}
-                    onChange={selectorOnChangeActualitySimple}
-                />
+                <div>
+                    <Form.Label htmlFor="periodDays">Choose period of days</Form.Label>
+                    <Form.Control
+                        type="number"
+                        placeholder="Enter period in days"
+                        name="Period Name"
+                        value={exportData.periodActuality}
+                        onChange={handleInputChangeActuality}
+                    />
+                    <div>Choose column</div>
+                    <Select
+                        className="basic-single"
+                        classNamePrefix="select"
+                        name="actuality_simple"
+                        options={exportData.allColumns.map((col) => ({value: col, label: col}))}
+                        onChange={selectorOnChangeActualitySimple}
+                    />
+                </div>
             )
         }
     }
@@ -196,40 +235,6 @@ function Checkbox() {
             )
         }
     }
-
-    // const selectorActuality = (actualityType) => {
-    //     if (actualityType === 'Simple') {
-    //         if (exportData.checker.actualitySimple && exportData.allColumns === null && exportData.db !== null
-    //             && exportData.table !== null) {
-    //             return (<Dropdown.Item> Loading... </Dropdown.Item>)
-    //         } else if (exportData.checker.actualitySimple && exportData.allColumns !== null) {
-    //             return (
-    //                 <Select
-    //                     className="basic-single"
-    //                     classNamePrefix="select"
-    //                     name="actuality_simple"
-    //                     options={exportData.allColumns.map((col) => ({value: col, label: col}))}
-    //                     onChange={selectorOnChangeActuality}
-    //                 />
-    //             )
-    //         }
-    //     } else {
-    //         if (exportData.checker.actualityDifficulty && exportData.allColumns === null && exportData.db !== null
-    //             && exportData.table !== null) {
-    //             return (<Dropdown.Item> Loading... </Dropdown.Item>)
-    //         } else if (exportData.checker.actualityDifficulty && exportData.allColumns !== null) {
-    //             return (
-    //                 <Select
-    //                     className="basic-single"
-    //                     classNamePrefix="select"
-    //                     name="actuality_difficulty"
-    //                     options={exportData.allColumns.map((col) => ({value: col, label: col}))}
-    //                     onChange={selectorOnChangeActuality}
-    //                 />
-    //             )
-    //         }
-    //     }
-    // }
 
     return (
         <div style={{marginTop: '25px', marginLeft: '55px'}}>
@@ -253,14 +258,12 @@ function Checkbox() {
                                                     duplication: e.target.checked
                                                 }));
                                                 dispatch(setColumns([]));
-                                                // duplicationColsSelector();
                                             } else if (type === "Null in Columns") {
                                                 dispatch(setCheckers({
                                                     ...exportData.checker,
                                                     nullCols: e.target.checked
                                                 }));
                                                 dispatch(setNullColumns([]));
-                                                // nullColsSelector();
                                             } else if (type === "Count of rows") {
                                                 dispatch(setCheckers({
                                                     ...exportData.checker,
@@ -289,12 +292,12 @@ function Checkbox() {
                                     />
                                     {type === 'Duplications' && duplicationColsSelector()}
                                     {type === 'Null in Columns' && nullColsSelector()}
+                                    {type === 'Count of rows' && selectorRowColumn()}
                                     {type === 'Actuality Simple' && selectorActualitySimple()}
                                     {type === 'Actuality Difficulty' && selectorActualityDifficulty()}
                                 </div>
                             ))}
                     </Form>
-                    {/*{console.log(exportData)}*/}
                 </div>
             </div>
         </div>
