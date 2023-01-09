@@ -12,6 +12,8 @@ HTTP_PATH: str = os.environ['HTTP_PATH']
 ACCESS_TOKEN: str = os.environ['TOKEN']
 NOTEBOOK_PATH: str = os.environ["NOTEBOOK_PATH"]
 CLUSTER_ID: str = os.environ["CLUSTER_ID"]
+RESULT_DATABASE: str = "test_db"
+RESULT_TABLE_NAME: str = "diplom_checkers"
 
 app = FastAPI()
 
@@ -209,6 +211,9 @@ async def send_checker(info: dict):
                         "period_actuality": period_actuality,
                         "col_count_rows": col_count_rows,
                         "period_count_rows": period_count_rows,
+                        "checker_name": checker_name,
+                        "cron": cron,
+                        "result_table_name": f"{RESULT_DATABASE}.{RESULT_TABLE_NAME}",
                         "job_id": "{{job_id}}"
                     },
                     "source": "WORKSPACE"
@@ -226,3 +231,36 @@ async def send_checker(info: dict):
     response = await dbfs_rpc(url_api, body)
 
     return response
+
+
+@app.get("/checker_results", tags=["checker_results"])
+async def get_checker_results():
+    """
+    Get results from table from Databricks
+    """
+
+    connection = sql.connect(
+        server_hostname=SERVER_HOST,
+        http_path=HTTP_PATH,
+        access_token=ACCESS_TOKEN)
+
+    cursor = connection.cursor()
+
+    cursor.execute(f"""
+    SELECT 
+        name,
+        id, 
+        job_id,
+        cron,
+        result,  
+        start_time,
+        time_of_check,
+        values
+    FROM {RESULT_DATABASE}.{RESULT_TABLE_NAME}
+    ORDER BY start_time DESC""")
+
+    result = cursor.fetchall()
+    cursor.close()
+    connection.close()
+
+    return result

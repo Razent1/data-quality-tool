@@ -2,17 +2,47 @@ import {Button} from "react-bootstrap";
 import {useDispatch, useSelector} from 'react-redux';
 import {setIsSubmitted} from "./store/exportData/exportData";
 import {useNavigate} from "react-router-dom";
+import {useEffect, useState} from "react";
+import button from "bootstrap/js/src/button";
 
 
 function CheckersList() {
-    const result = [['Name', 'Result', 'Scheduler', 'Date'], ['val1', 'val2', 'val3'], ['val1', 'val2', 'val3']];
+    const [checkersResults, setCheckersResults] = useState([]);
+    const [isHover, setIsHover] = useState(false);
+    const [isChosen, setChosen] = useState(false);
+    const [checkerRes, setCheckerRes] = useState([]);
+    const result = [['Name', 'Id', 'Job Id', 'Cron', 'Result', 'Date', "Time"], checkersResults.map((item) => item.slice(0, -1)).flat()];
+    const results = [[], checkersResults.map((item) => item.at(-1).flat())];
     const exportData = useSelector(state => state.data);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    useEffect(() => {
+        async function fetchCheckersResults() {
+            fetch('api/checker_results')
+                .then(response => response.json())
+                .then(response => setCheckersResults(response))
+            // fetch('api/databases')
+            //     .then(response => response.json())
+            //     .then(response => setItemsDb(response))
+        }
+
+        fetchCheckersResults();
+    }, [])
+
+    const onClick = () => {
+
+    }
+
     const checkerBlocks = (values) => {
-        return (values.map((val) => <div className="row">
-            {val.map((col) => <div className="col-2" style={{margin:"15px"}}>{col}</div>)}
+        return (values.map((val, i) => <div className="row"
+                                         style={{borderBottom: "solid", color: isHover ? 'blue' : 'black'}}
+                                         >
+            {val.map((col) =>  <div className="col-1"
+                                   style={{margin: "15px"}}
+                                   onMouseEnter={() => setIsHover(true)}
+                                   onMouseLeave={() => setIsHover(false)}
+                                    onClick={() => {setCheckerRes(results[i]); setChosen(true)}}>{col}</div>)}
         </div>))
     }
 
@@ -21,21 +51,20 @@ function CheckersList() {
         // dispatch(setIsSubmitted(false));
     }
 
-
-    //this will be code which fetch table from backend
-
     return (
         <div className="row">
             <div className="col">
                 {checkerBlocks(result)}
-
             </div>
             <div className="col">
-                Item doesn't choose
+                {!isChosen || checkerRes.length === 0 && <div>Item doesn't choose</div>}
+                {isChosen && checkerRes.length > 0 && <div>{checkerRes[0][0]} {checkerRes[0][1]}</div>}
             </div>
             <div className="d-grid gap-2" style={{alignSelf: "flex-start", marginTop: "100px"}}>
                 <Button variant="primary" size="lg" onClick={onSubmitButton}>
                     Go Back
+                    {/*{console.log(checkersResults)}*/}
+                    {/*{console.log(result)}*/}
                 </Button>{' '}
             </div>
         </div>
