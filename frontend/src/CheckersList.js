@@ -8,7 +8,7 @@ import button from "bootstrap/js/src/button";
 
 function CheckersList() {
     const [checkersResults, setCheckersResults] = useState([]);
-    const [isHover, setIsHover] = useState(false);
+    const [hover, setHover] = useState(null);
     const [isChosen, setChosen] = useState(false);
     const [checkerRes, setCheckerRes] = useState([]);
     const result = [['Name', 'Id', 'Job Id', 'Cron', 'Result', 'Date', "Time"], checkersResults.map((item) => item.slice(0, -1)).flat()];
@@ -22,33 +22,28 @@ function CheckersList() {
             fetch('api/checker_results')
                 .then(response => response.json())
                 .then(response => setCheckersResults(response))
-            // fetch('api/databases')
-            //     .then(response => response.json())
-            //     .then(response => setItemsDb(response))
         }
-
         fetchCheckersResults();
     }, [])
 
-    const onClick = () => {
-
-    }
-
     const checkerBlocks = (values) => {
         return (values.map((val, i) => <div className="row"
-                                         style={{borderBottom: "solid", color: isHover ? 'blue' : 'black'}}
-                                         >
-            {val.map((col) =>  <div className="col-1"
+                                            style={{borderBottom: "solid", color: hover === val[0] ? 'blue' : 'black'}}
+                                            onMouseEnter={() => setHover(val[0])}
+                                            onMouseLeave={() => setHover(null)}
+        >
+            {val.map((col) => <div className="col-1"
                                    style={{margin: "15px"}}
-                                   onMouseEnter={() => setIsHover(true)}
-                                   onMouseLeave={() => setIsHover(false)}
-                                    onClick={() => {setCheckerRes(results[i]); setChosen(true)}}>{col}</div>)}
+
+                                   onClick={() => {
+                                       setCheckerRes(results[i]);
+                                       setChosen(true)
+                                   }}>{col}</div>)}
         </div>))
     }
 
     const onSubmitButton = () => {
         navigate('/');
-        // dispatch(setIsSubmitted(false));
     }
 
     return (
