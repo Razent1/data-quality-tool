@@ -2,7 +2,7 @@ import './App.css';
 
 import 'bootstrap/dist/css/bootstrap.css';
 
-import {useState, useEffect} from "react";
+import {useState} from "react";
 import TimePicker from 'react-time-picker';
 import Form from "react-bootstrap/Form";
 import {setRepeats, setTime, setInterval} from './store/exportData/exportData';

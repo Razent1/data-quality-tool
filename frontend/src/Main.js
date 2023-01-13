@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
 import Chosers from "./Chosers";
 import Checkbox from "./Checkbox";
 import Cron from "./Cron";

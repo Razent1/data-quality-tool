@@ -15,8 +15,7 @@ import {
     setCheckerName,
     setFiltrationCondition,
     setColumns,
-    setAllColumns, setNullColumns, setActuality,
-    setIsSubmitted
+    setAllColumns, setNullColumns, setActuality
 } from './store/exportData/exportData';
 
 
@@ -89,11 +88,7 @@ function Chosers() {
                 .then(response => response.json())
                 .then(response => console.log(response))
                 .then(() => navigate('/checkers'))
-            // .then(response => response.status_)
         }
-        // dispatch(setIsSubmitted(true));
-        // navigate('/checkers');
-        // return <CheckersList/>
     }
 
     const handleInputChangeChecker = (event) => {

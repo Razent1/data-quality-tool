@@ -3,7 +3,7 @@ import classnames from 'classnames';
 
 
 import Form from 'react-bootstrap/Form';
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 import {
     setCheckers,
     setAllColumns,
@@ -11,7 +11,7 @@ import {
     deleteColumns,
     setNullColumns,
     deleteNullColumns,
-    setActuality, setCheckerName, setPeriodActuality, setPeriodRows, setRowColumn
+    setActuality, setPeriodActuality, setPeriodRows, setRowColumn
 } from './store/exportData/exportData';
 import {useDispatch, useSelector} from "react-redux";
 import {Dropdown} from "react-bootstrap";

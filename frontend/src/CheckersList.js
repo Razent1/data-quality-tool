@@ -1,9 +1,6 @@
 import {Button} from "react-bootstrap";
-import {useDispatch, useSelector} from 'react-redux';
-import {setIsSubmitted} from "./store/exportData/exportData";
 import {useNavigate} from "react-router-dom";
 import {useEffect, useState} from "react";
-import button from "bootstrap/js/src/button";
 
 
 function CheckersList() {
@@ -95,9 +92,10 @@ function CheckersList() {
     return (
         <div className="container-fluid" style={{height: "100vh"}}>
             <div className="row" style={{height: "100%"}}>
-                <div className="col">
+                {checkersResults.length === 0 && <div className="col">Loading...</div>}
+                {checkersResults.length !== 0 && <div className="col">
                     {checkerBlocks(resultTableValues)}
-                </div>
+                </div>}
                 <div className="col">
                     {(!isChosen || checkerRes.length === 0) &&
                         <div className="row justify-content-center">Item doesn't choose</div>}
