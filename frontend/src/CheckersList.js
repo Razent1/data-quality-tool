@@ -14,9 +14,8 @@ function CheckersList() {
     const mainInformationResults = checkersResults.map((item) => item.at(-1));
     const navigate = useNavigate();
     const columnNames = ['Name', 'Id', 'Job Id', 'Cron', 'Result', 'Created Time', 'Run Time'];
-    //TODO put these constants to env variables in docker
-    const databricksHostName = "https://dbc-18975113-1ba6.cloud.databricks.com";
-    const databricksAccountId = "2520309401638937";
+    const databricksHostName = process.env.REACT_APP_DATABRICKS_HOST_NAME;
+    const databricksAccountId = process.env.REACT_APP_DATABRICKS_ACCOUNT_ID;
 
     useEffect(() => {
         async function fetchCheckersResults() {
@@ -133,7 +132,6 @@ function CheckersList() {
                             </div>}
                             <div className="row"
                                  style={{margin: "15px"}}>{history != null ? createHistoryRunsLine() : 'Loading...'}</div>
-                            {/*<div className="row" style={{margin: "15px"}}>{history.map((run) => <div className="col">{run[3]}</div>)}</div>*/}
                         </div>
                         <div className="col" style={{margin: "15px"}}>
                             <div className="row" style={{margin: "3px", borderBottom: "solid"}}><h3
