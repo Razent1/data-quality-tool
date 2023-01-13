@@ -1,11 +1,17 @@
 FROM node:lts-alpine as build-step
 WORKDIR /app
+
+ARG SERVER_HOST
+ARG DATABRICKS_ACCOUNT_ID
+
 ENV PATH /app/node_modules/.bin:$PATH
-#ENV DATABRICKS_HOST_NAME=https://dbc-18975113-1ba6.cloud.databricks.com
-#ENV DATABRICKS_ACCOUNT_ID=2520309401638937
+ENV DATABRICKS_HOST_NAME=$SERVER_HOST
+ENV DATABRICKS_ACCOUNT_ID=$DATABRICKS_ACCOUNT_ID
+
 COPY package.json  ./
 COPY ./src ./src
 COPY ./public ./public
+
 RUN npm install
 RUN npm run build
 

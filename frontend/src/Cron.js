@@ -12,6 +12,8 @@ function Cron() {
     const [value, setDate] = useState("10:00");
     const exportData = useSelector(state => state.data);
     const dispatch = useDispatch();
+    const repeats = ['Every Hour', 'Every Day', 'Every Week', 'Every Month'];
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     return (
         <div style={{marginTop: '25px', marginLeft: '55px'}}>
@@ -27,7 +29,7 @@ function Cron() {
             </div>
             <div className="dropdownBlock" style={{borderBottom: "1px solid black"}}>
                 <Form>
-                    {['Every Hour', 'Every Day', 'Every Week', 'Every Month']
+                    {repeats
                         .map((type) => (
                             <div key={`${type}default-radio`} className="mb-3">
                                 <Form.Check
@@ -56,7 +58,7 @@ function Cron() {
                     Repeat every day of week
                 </div>
                 <Form>
-                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+                    {daysOfWeek
                         .map((type) => (
                             <div key={`inline-checkbox-${type}`} className="mb-3">
                                 <Form.Check

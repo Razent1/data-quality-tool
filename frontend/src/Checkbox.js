@@ -20,6 +20,7 @@ import Select, {ActionMeta, OnChangeValue, StylesConfig} from 'react-select'
 function Checkbox() {
     const exportData = useSelector(state => state.data);
     const dispatch = useDispatch();
+    const typesOfCheckers = ['Duplications', 'Null in Columns', 'Count of rows', 'Actuality Simple', 'Actuality Difficulty'];
 
     useEffect(() => {
         async function fetchColumns() {
@@ -149,7 +150,7 @@ function Checkbox() {
             actualityDifficulty: newValue.value
         }));
     }
-    const selectorOnChangeRowColumns= (newValue, actionMeta) => {
+    const selectorOnChangeRowColumns = (newValue, actionMeta) => {
         dispatch(setRowColumn(newValue.value));
     }
 
@@ -244,7 +245,7 @@ function Checkbox() {
             <div className={classnames("row", "dropdownBlock")}>
                 <div className="col">
                     <Form>
-                        {['Duplications', 'Null in Columns', 'Count of rows', 'Actuality Simple', 'Data Outliers']
+                        {typesOfCheckers
                             .map((type) => (
                                 <div key={`${type}default-checkbox`} className="mb-3">
                                     <Form.Check

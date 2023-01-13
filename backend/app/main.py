@@ -9,11 +9,8 @@ HTTP_PATH: str = os.environ['HTTP_PATH']
 ACCESS_TOKEN: str = os.environ['TOKEN']
 NOTEBOOK_PATH: str = os.environ["NOTEBOOK_PATH"]
 CLUSTER_ID: str = os.environ["CLUSTER_ID"]
-RESULT_DATABASE: str = "test_db"
-RESULT_TABLE_NAME: str = "diplom_checkers"
-
-# RESULT_DATABASE: str = os.environ["RESULT_DATABASE"]
-# RESULT_TABLE_NAME: str = os.environ["RESULT_TABLE_NAME"]
+RESULT_DATABASE: str = os.environ["RESULT_DATABASE"]
+RESULT_TABLE_NAME: str = os.environ["RESULT_TABLE_NAME"]
 
 app = FastAPI()
 
