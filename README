@@ -1,3 +1,0 @@
-For starting backend service for mac should write
-
-docker build -t myimage . --platform linux/x86_64

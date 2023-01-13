@@ -1,7 +1,4 @@
-import logging
-
 from fastapi import FastAPI
-from datetime import datetime
 from databricks import sql
 import os
 import requests
@@ -14,6 +11,9 @@ NOTEBOOK_PATH: str = os.environ["NOTEBOOK_PATH"]
 CLUSTER_ID: str = os.environ["CLUSTER_ID"]
 RESULT_DATABASE: str = "test_db"
 RESULT_TABLE_NAME: str = "diplom_checkers"
+
+# RESULT_DATABASE: str = os.environ["RESULT_DATABASE"]
+# RESULT_TABLE_NAME: str = os.environ["RESULT_TABLE_NAME"]
 
 app = FastAPI()
 
@@ -282,13 +282,15 @@ async def get_checker_history(job_id: dict):
     cursor = connection.cursor()
 
     cursor.execute(f"""
+        SELECT
         id,
         job_id,
-        start_tyme,
+        started_at,
         result
         FROM {RESULT_DATABASE}.{RESULT_TABLE_NAME}
         WHERE job_id = {job_id["jobId"]} 
-        ORDER BY start_time DESC
+        ORDER BY started_at DESC
+        LIMIT 10
     """)
 
     result = cursor.fetchall()

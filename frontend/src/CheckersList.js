@@ -9,7 +9,7 @@ function CheckersList() {
     const [isChosen, setChosen] = useState(false);
     const [checkerRes, setCheckerRes] = useState([]);
     const [info, setInfo] = useState([]);
-    const [history, setHistory] = useState([]);
+    const [history, setHistory] = useState(null);
     const resultTableValues = checkersResults.map((item) => item.slice(0, -1));
     const mainInformationResults = checkersResults.map((item) => item.at(-1));
     const navigate = useNavigate();
@@ -29,19 +29,20 @@ function CheckersList() {
     }, []);
 
     useEffect(() => {
-        async function setHistory() {
-            if (isChosen) {
+        async function setHistoryRuns() {
+            if (isChosen && history == null) {
+                console.log(isChosen);
                 await fetch("api/checker_history", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({'jobId': info[2]})
                 })
                     .then(response => response.json())
-                    .then(response => setHistory(response));
+                    .then(response => setHistory(response))
             }
         }
 
-        setHistory();
+        setHistoryRuns();
     }, [isChosen, checkerRes])
 
     const checkerBlocks = (values) => {
@@ -52,7 +53,8 @@ function CheckersList() {
                      style={{
                          height: "25%",
                          borderBottom: "solid",
-                         color: hover === row[i] && i !== 0 ? 'blue' : 'black'
+                         color: hover === row[i] && i !== 0 ? 'blue' : 'black',
+                         cursor: "pointer"
                      }}
                      onMouseEnter={() => {
                          if (i !== 0) setHover(row[i])
@@ -63,7 +65,7 @@ function CheckersList() {
                      onClick={() => {
                          if (i !== 0) {
                              setCheckerRes(mainInformationResults[i - 1]);
-                             setHistory([]);
+                             setHistory(null);
                              setChosen(true);
                              setInfo(row);
                          }
@@ -85,8 +87,16 @@ function CheckersList() {
                                              style={{margin: "15px"}}>{row[0]}: {row[1]}</div>))
     }
 
-    const onSubmitButton = () => {
-        navigate('/');
+    const openHref = (link) => {
+        window.location.href = link;
+    }
+
+    const createHistoryRunsLine = () => {
+        return (history.map((run) => <div
+            className={'col ' + (run[3] === 'Failed' ? 'box red' : 'box green')}
+            onClick={() => openHref(`${databricksHostName}/?o=${databricksAccountId}#job/${info[2]}/run/${info[1]}`)}
+            style={{cursor: "pointer"}}></div>));
+
     }
 
     return (
@@ -114,10 +124,16 @@ function CheckersList() {
                             </div>
                             <div className="row" style={{margin: "15px", borderBottom: "solid"}}>Time of
                                 check: {info[5]}</div>
-                            <div className="row" style={{margin: "15px"}}><h2 className="text-center"
-                                                                              style={{color: info[4] === 'Failed' ? 'red' : 'green'}}>
+                            <div className="row" style={{margin: "15px", borderBottom: "solid"}}><h2
+                                className="text-center"
+                                style={{color: info[4] === 'Failed' ? 'red' : 'green'}}>
                                 {info[4]}</h2></div>
-
+                            {history != null && <div className="row"
+                                                     style={{margin: "15px"}}>Last {history.length} runs:
+                            </div>}
+                            <div className="row"
+                                 style={{margin: "15px"}}>{history != null ? createHistoryRunsLine() : 'Loading...'}</div>
+                            {/*<div className="row" style={{margin: "15px"}}>{history.map((run) => <div className="col">{run[3]}</div>)}</div>*/}
                         </div>
                         <div className="col" style={{margin: "15px"}}>
                             <div className="row" style={{margin: "3px", borderBottom: "solid"}}><h3
@@ -129,7 +145,7 @@ function CheckersList() {
                     }
                 </div>
                 <div className="d-grid gap-2" style={{alignSelf: "flex-start", marginTop: "100px"}}>
-                    <Button variant="primary" size="lg" onClick={onSubmitButton}>
+                    <Button variant="primary" size="lg" onClick={() => navigate('/')}>
                         Go Back
                     </Button>{' '}
                 </div>
