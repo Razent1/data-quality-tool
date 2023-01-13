@@ -80,18 +80,19 @@ function Chosers() {
 
 
     const onSubmitButton = () => {
-        // if (errorNotField() === false) {
-        //     fetch("api/send_checker", {
-        //         method: "POST",
-        //         headers: {"Content-Type": "application/json"},
-        //         body: JSON.stringify(exportData)
-        //     })
-        //         .then(response => response.json())
-        //         .then(response => console.log(response))
-        //         // .then(response => response.status_)
-        // }
+        if (errorNotField() === false) {
+            fetch("api/send_checker", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(exportData)
+            })
+                .then(response => response.json())
+                .then(response => console.log(response))
+                .then(() => navigate('/checkers'))
+            // .then(response => response.status_)
+        }
         // dispatch(setIsSubmitted(true));
-        navigate('/checkers');
+        // navigate('/checkers');
         // return <CheckersList/>
     }
 

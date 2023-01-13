@@ -253,11 +253,43 @@ async def get_checker_results():
         job_id,
         cron,
         result,  
-        start_time,
+        started_at,
         time_of_check,
+        table_name,
+        checker_type_name,
         values
     FROM {RESULT_DATABASE}.{RESULT_TABLE_NAME}
-    ORDER BY start_time DESC""")
+    ORDER BY started_at DESC""")
+
+    result = cursor.fetchall()
+    cursor.close()
+    connection.close()
+
+    return result
+
+
+@app.post("/checker_history", tags=["checker_history"])
+async def get_checker_history(job_id: dict):
+    """
+    Get history of runs of checker by id
+    """
+
+    connection = sql.connect(
+        server_hostname=SERVER_HOST,
+        http_path=HTTP_PATH,
+        access_token=ACCESS_TOKEN)
+
+    cursor = connection.cursor()
+
+    cursor.execute(f"""
+        id,
+        job_id,
+        start_tyme,
+        result
+        FROM {RESULT_DATABASE}.{RESULT_TABLE_NAME}
+        WHERE job_id = {job_id["jobId"]} 
+        ORDER BY start_time DESC
+    """)
 
     result = cursor.fetchall()
     cursor.close()

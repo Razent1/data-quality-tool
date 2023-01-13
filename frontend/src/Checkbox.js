@@ -244,7 +244,7 @@ function Checkbox() {
             <div className={classnames("row", "dropdownBlock")}>
                 <div className="col">
                     <Form>
-                        {['Duplications', 'Null in Columns', 'Count of rows', 'Actuality Simple', 'Actuality Difficulty']
+                        {['Duplications', 'Null in Columns', 'Count of rows', 'Actuality Simple', 'Data Outliers']
                             .map((type) => (
                                 <div key={`${type}default-checkbox`} className="mb-3">
                                     <Form.Check
