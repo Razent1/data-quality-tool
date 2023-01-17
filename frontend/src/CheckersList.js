@@ -1,5 +1,5 @@
 import {Button} from "react-bootstrap";
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {useEffect, useState} from "react";
 
 
@@ -50,7 +50,7 @@ function CheckersList() {
             return (
                 <div className="row"
                      style={{
-                         height: "25%",
+                         height: "15%",
                          borderBottom: "solid",
                          color: hover === row[i] && i !== 0 ? 'blue' : 'black',
                          cursor: "pointer"
@@ -72,8 +72,10 @@ function CheckersList() {
                 >
                     {row.map((el, el_num) => {
                         if (el_num < 7) {
+                            if (el.length > 17)
+                                el = el.slice(0, 17) + "...";
                             return (<div className="col"
-                                         style={{marginLeft: "5px", alignSelf: "center", fontSize: "15px"}}
+                                         style={{marginLeft: "5px", alignSelf: "center", fontSize: "10px"}}
                             >{el}</div>)
                         }
                     })}
@@ -142,11 +144,11 @@ function CheckersList() {
                     </div>
                     }
                 </div>
-                <div className="d-grid gap-2" style={{alignSelf: "flex-start", marginTop: "100px"}}>
-                    <Button variant="primary" size="lg" onClick={() => navigate('/')}>
-                        Go Back
-                    </Button>{' '}
-                </div>
+                {/*<div className="d-grid gap-2" style={{alignSelf: "flex-start", marginTop: "100px"}}>*/}
+                {/*    <Button variant="primary" size="lg" onClick={() => navigate('/')}>*/}
+                {/*        Go Back*/}
+                {/*    </Button>{' '}*/}
+                {/*</div>*/}
             </div>
         </div>
     )

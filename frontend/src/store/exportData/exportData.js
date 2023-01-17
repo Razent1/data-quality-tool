@@ -17,6 +17,8 @@ const SET_INTERVAL = 'INTERVAL';
 const SET_PERIOD_ROWS = 'SET_PERIOD_ROWS';
 const SET_PERIOD_ACTUALITY = 'SET_PERIOD_ACTUALITY';
 const SET_ROW_COLUMN = 'SET_ROW_COLUMN';
+const SET_DATA_OUTLIER_COLUMN = 'SET_DATA_OUTLIER_COLUMN';
+const SET_DATA_OUTLIER_PERIOD = 'SET_DATA_OUTLIER_PERIOD';
 const SET_IS_SUBMITTED = 'SET_IS_SUBMITTED';
 
 
@@ -139,6 +141,20 @@ export function setRowColumn(rowColumn) {
     }
 }
 
+export function setDataOutlierColumn(dataOutliersColumn) {
+    return {
+        type: SET_DATA_OUTLIER_COLUMN,
+        dataOutliersColumn
+    }
+}
+
+export function setDataOutlierPeriod(periodDataOutliers) {
+    return {
+        type: SET_DATA_OUTLIER_PERIOD,
+        periodDataOutliers
+    }
+}
+
 export function setIsSubmitted(isSubmitted) {
     return {
         type: SET_IS_SUBMITTED,
@@ -155,14 +171,17 @@ const defaultData =
         nullColumns: [],
         actuality: {actualitySimple: null, actualityDifficulty: null},
         rowColumn: null,
+        dataOutliersColumn: null,
         periodActuality: 1,
         periodRows: 1,
+        periodDataOutliers: 1,
         checker: {
             duplication: false,
             nullCols: false,
             countRows: false,
             actualitySimple: false,
-            actualityDifficulty: false
+            actualityDifficulty: false,
+            dataOutliers: false
         },
         checkerName: '',
         filtrationCondition: '',
@@ -319,6 +338,20 @@ function data(state = defaultData, action) {
                 {
                     ...state,
                     rowColumn: action.rowColumn
+                }
+            )
+        case SET_DATA_OUTLIER_COLUMN:
+            return (
+                {
+                    ...state,
+                    dataOutliersColumn: action.dataOutliersColumn
+                }
+            )
+        case SET_DATA_OUTLIER_PERIOD:
+            return (
+                {
+                    ...state,
+                    periodDataOutliers: action.periodDataOutliers
                 }
             )
         case SET_IS_SUBMITTED:

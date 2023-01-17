@@ -11,7 +11,7 @@ import {
     deleteColumns,
     setNullColumns,
     deleteNullColumns,
-    setActuality, setPeriodActuality, setPeriodRows, setRowColumn
+    setActuality, setPeriodActuality, setPeriodRows, setRowColumn, setDataOutlierColumn, setDataOutlierPeriod
 } from './store/exportData/exportData';
 import {useDispatch, useSelector} from "react-redux";
 import {Dropdown} from "react-bootstrap";
@@ -20,7 +20,7 @@ import Select, {ActionMeta, OnChangeValue, StylesConfig} from 'react-select'
 function Checkbox() {
     const exportData = useSelector(state => state.data);
     const dispatch = useDispatch();
-    const typesOfCheckers = ['Duplications', 'Null in Columns', 'Count of rows', 'Actuality Simple', 'Actuality Difficulty'];
+    const typesOfCheckers = ['Duplications', 'Null in Columns', 'Count of rows', 'Actuality Simple', 'Actuality Difficulty', 'Data Outliers'];
 
     useEffect(() => {
         async function fetchColumns() {
@@ -28,7 +28,8 @@ function Checkbox() {
                     || exportData.checker.nullCols
                     || exportData.checker.actualitySimple
                     || exportData.checker.actualityDifficulty
-                    || exportData.checker.countRows)
+                    || exportData.checker.countRows
+                    || exportData.checker.dataOutliers)
                 && exportData.db !== null && exportData.table !== null) {
                 fetch("api/columns", {
                     method: "POST",
@@ -47,7 +48,8 @@ function Checkbox() {
         exportData.checker.nullCols,
         exportData.checker.actualitySimple,
         exportData.checker.actualityDifficulty,
-        exportData.checker.countRows]);
+        exportData.checker.countRows,
+        exportData.checker.dataOutliers]);
 
     const selectorOnChangeDedup = (
         newValue,
@@ -154,6 +156,10 @@ function Checkbox() {
         dispatch(setRowColumn(newValue.value));
     }
 
+    const selectorOnChangeDataOutlierColumn = (newValue, actionMeta) => {
+        dispatch(setDataOutlierColumn(newValue.value));
+    }
+
     const handleInputChangeActuality = (event) => {
         const {value} = event.target
         dispatch(setPeriodActuality(value));
@@ -162,6 +168,11 @@ function Checkbox() {
     const handleInputChangeRows = (event) => {
         const {value} = event.target
         dispatch(setPeriodRows(value));
+    }
+
+    const handleInputChangeDataOutliers = (event) => {
+        const {value} = event.target
+        dispatch(setDataOutlierPeriod(value));
     }
 
     const selectorRowColumn = () => {
@@ -237,6 +248,34 @@ function Checkbox() {
         }
     }
 
+    const selectorDataOutliers = () => {
+        if (exportData.checker.dataOutliers && exportData.allColumns === null && exportData.db !== null
+            && exportData.table !== null) {
+            return (<Dropdown.Item> Loading... </Dropdown.Item>)
+        } else if (exportData.checker.dataOutliers && exportData.allColumns !== null) {
+            return (
+                <div>
+                    <Form.Label htmlFor="periodDays">Choose period of days</Form.Label>
+                    <Form.Control
+                        type="number"
+                        placeholder="Enter period in days"
+                        name="Period Name"
+                        value={exportData.periodDataOutliers}
+                        onChange={handleInputChangeDataOutliers}
+                    />
+                    <div>Choose column</div>
+                    <Select
+                        className="basic-single"
+                        classNamePrefix="select"
+                        name="data_outliers"
+                        options={exportData.allColumns.map((col) => ({value: col, label: col}))}
+                        onChange={selectorOnChangeDataOutlierColumn}
+                    />
+                </div>
+            )
+        }
+    }
+
     return (
         <div style={{marginTop: '25px', marginLeft: '55px'}}>
             <div className="headings" style={{marginBottom: '20px'}}>
@@ -288,6 +327,11 @@ function Checkbox() {
                                                     actualitySimple: exportData.actuality.actualitySimple,
                                                     actualityDifficulty: null
                                                 }))
+                                            } else if (type === "Data Outliers") {
+                                                dispatch(setCheckers({
+                                                    ...exportData.checker,
+                                                    dataOutliers: e.target.checked
+                                                }));
                                             }
                                         }}
                                     />
@@ -296,6 +340,7 @@ function Checkbox() {
                                     {type === 'Count of rows' && selectorRowColumn()}
                                     {type === 'Actuality Simple' && selectorActualitySimple()}
                                     {type === 'Actuality Difficulty' && selectorActualityDifficulty()}
+                                    {type === 'Data Outliers' && selectorDataOutliers()}
                                 </div>
                             ))}
                     </Form>
