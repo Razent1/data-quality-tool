@@ -187,6 +187,8 @@ async def send_checker(info: dict):
     period_actuality: str = str(info["periodActuality"])
     col_count_rows: str = str(info["rowColumn"])
     period_count_rows: str = str(info["periodRows"])
+    col_data_outliers: str = str(info["dataOutliersColumn"])
+    period_data_outliers: str = str(info["periodDataOutliers"])
 
     cron = scheduler_parser(time, interval, repeats)
     url_api = f'https://{SERVER_HOST}/api/2.1/jobs/create'
@@ -208,6 +210,8 @@ async def send_checker(info: dict):
                         "period_actuality": period_actuality,
                         "col_count_rows": col_count_rows,
                         "period_count_rows": period_count_rows,
+                        "col_data_outliers": col_data_outliers,
+                        "period_data_outliers": period_data_outliers,
                         "checker_name": checker_name,
                         "cron": cron,
                         "result_table_name": f"{RESULT_DATABASE}.{RESULT_TABLE_NAME}",
