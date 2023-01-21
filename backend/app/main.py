@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from databricks import sql
 import os
 import requests
@@ -12,7 +12,7 @@ CLUSTER_ID: str = os.environ["CLUSTER_ID"]
 RESULT_DATABASE: str = os.environ["RESULT_DATABASE"]
 RESULT_TABLE_NAME: str = os.environ["RESULT_TABLE_NAME"]
 
-app = FastAPI()
+app = FastAPI(openapi_prefix=os.getenv('ROOT_PATH', ''))
 
 origins = [
     "http://localhost:3000",
@@ -39,6 +39,10 @@ async def dbfs_rpc(action, body):
 
 
 def scheduler_parser(time, interval, repeats):
+    """
+    Convert parameters to cron syntax
+    """
+
     hour, min = time.split(':')
 
     if interval == 'Every Hour':
@@ -95,6 +99,11 @@ def scheduler_parser(time, interval, repeats):
         return f"0 {min} {hour} ? * Mon"
     else:
         return None
+
+
+@app.get("/")
+async def root(request: Request):
+    return {"message": "Welcome to data quality tool API", "root_path": request.scope.get("root_path")}
 
 
 @app.get("/databases", tags=["Tables"])
@@ -235,10 +244,13 @@ async def send_checker(info: dict):
 
 
 @app.get("/checker_results", tags=["checker_results"])
-async def get_checker_results():
+async def get_checker_results(page_num: int = 1, page_size: int = 5):
     """
     Get results from table from Databricks
     """
+
+    start = (page_num - 1) * page_size
+    end = start + page_size
 
     connection = sql.connect(
         server_hostname=SERVER_HOST,
@@ -266,7 +278,31 @@ async def get_checker_results():
     cursor.close()
     connection.close()
 
-    return result
+    res_len = len(result)
+
+    response = {
+        "data": result[start:end],
+        "total": res_len,
+        "count": page_size,
+        "pagination": {}
+    }
+
+    if end >= res_len:
+        response["pagination"]["next"] = None
+
+        if page_num > 1:
+            response["pagination"]["previous"] = f"/checker_results?page_num={page_num - 1}&page_size={page_size}"
+        else:
+            response["pagination"]["previous"] = None
+    else:
+        if page_num > 1:
+            response["pagination"]["previous"] = f"/checker_results?page_num={page_num - 1}&page_size={page_size}"
+        else:
+            response["pagination"]["previous"] = None
+        response["pagination"]["next"] = f"/checker_results?page_num={page_num + 1}&page_size={page_size}"
+
+    return response
+    # return result[start:end]
 
 
 @app.post("/checker_history", tags=["checker_history"])

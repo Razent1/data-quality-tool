@@ -9,6 +9,9 @@ function CheckersList() {
     const [isChosen, setChosen] = useState(false);
     const [checkerRes, setCheckerRes] = useState([]);
     const [info, setInfo] = useState([]);
+    const [pageNum, setPageNum] = useState(1);
+    const [pag, setPag] = useState(null);
+    const [dataLen, setDataLen] = useState(null);
     const [history, setHistory] = useState(null);
     const resultTableValues = checkersResults.map((item) => item.slice(0, -1));
     const mainInformationResults = checkersResults.map((item) => item.at(-1));
@@ -19,18 +22,21 @@ function CheckersList() {
 
     useEffect(() => {
         async function fetchCheckersResults() {
-            fetch('api/checker_results')
+            await fetch(`api/checker_results?page_num=${pageNum}`)
                 .then(response => response.json())
-                .then(response => setCheckersResults(response))
+                .then(response => {
+                    setCheckersResults(response['data']);
+                    setDataLen(response['total']);
+                    setPag(response['pagination']);
+                })
         }
 
         fetchCheckersResults();
-    }, []);
+    }, [pageNum]);
 
     useEffect(() => {
         async function setHistoryRuns() {
             if (isChosen && history == null) {
-                console.log(isChosen);
                 await fetch("api/checker_history", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
@@ -97,7 +103,18 @@ function CheckersList() {
             className={'col ' + (run[3] === 'Failed' ? 'box red' : 'box green')}
             onClick={() => openHref(`${databricksHostName}/?o=${databricksAccountId}#job/${info[2]}/run/${info[1]}`)}
             style={{cursor: "pointer"}}></div>));
+    }
 
+    const pagination = () => {
+        const pageCount = Math.ceil(dataLen / resultTableValues.length);
+        const res = [];
+        for (let i = 0; i < pageCount; i++) {
+            res.push(<div className="col-1" style={{cursor: "pointer"}} onClick={() => {
+                setPageNum(i + 1);
+                setCheckersResults([]);
+            }}>{i + 1}</div>)
+        }
+        return res;
     }
 
     return (
@@ -106,6 +123,7 @@ function CheckersList() {
                 {checkersResults.length === 0 && <div className="col">Loading...</div>}
                 {checkersResults.length !== 0 && <div className="col">
                     {checkerBlocks(resultTableValues)}
+                    <div className="row" style={{marginTop: "20px"}}>{pagination()}</div>
                 </div>}
                 <div className="col">
                     {(!isChosen || checkerRes.length === 0) &&
@@ -118,10 +136,10 @@ function CheckersList() {
                             <div className="row" style={{margin: "15px"}}>Checker type: {info[8]}</div>
                             <div className="row" style={{margin: "15px"}}>Checked table: {info[7]}</div>
                             <div className="row" style={{margin: "15px"}}>Run Id: <a
-                                href={`${databricksHostName}/?o=${databricksAccountId}#job/${info[2]}/run/${info[1]}`}>{info[1]}</a>
+                                href={`${databricksHostName} / ? o =${databricksAccountId}#job /${info[2]}/run/${info[1]}`}>{info[1]}</a>
                             </div>
                             <div className="row" style={{margin: "15px"}}>Job Id: <a
-                                href={`${databricksHostName}/?o=${databricksAccountId}#job/${info[2]}`}>{info[2]}</a>
+                                href={`${databricksHostName} / ? o =${databricksAccountId}#job /${info[2]}`}>{info[2]}</a>
                             </div>
                             <div className="row" style={{margin: "15px", borderBottom: "solid"}}>Time of
                                 check: {info[5]}</div>
