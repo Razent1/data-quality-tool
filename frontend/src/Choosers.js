@@ -19,7 +19,7 @@ import {
 } from './store/exportData/exportData';
 
 
-function Chosers() {
+function Choosers() {
     const [itemsDB, setItemsDb] = useState([]);
     const [dbSchemas, setSchema] = useState([]);
     const [checker, setChecker] = useState("");
@@ -66,7 +66,8 @@ function Chosers() {
                 || exportData.checker.nullCols !== false
                 || exportData.checker.countRows !== false
                 || exportData.checker.actualitySimple !== false
-                || exportData.checker.actualityDifficulty !== false)
+                || exportData.checker.actualityDifficulty !== false
+                || exportData.checker.dataOutliers !== false)
             && exportData.checkerName !== ''
             && exportData.exports !== null) {
             setErrorFields(false);
@@ -207,4 +208,4 @@ function Chosers() {
     }
 }
 
-export default Chosers;
+export default Choosers;

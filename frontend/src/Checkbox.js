@@ -20,7 +20,7 @@ import Select, {ActionMeta, OnChangeValue, StylesConfig} from 'react-select'
 function Checkbox() {
     const exportData = useSelector(state => state.data);
     const dispatch = useDispatch();
-    const typesOfCheckers = ['Duplications', 'Null in Columns', 'Count of rows', 'Actuality Simple', 'Actuality Difficulty', 'Data Outliers'];
+    const typesOfCheckers = ['Duplications', 'Null in Columns', 'Count of rows', 'Actuality Simple', 'Data Outliers'];
 
     useEffect(() => {
         async function fetchColumns() {
@@ -277,7 +277,7 @@ function Checkbox() {
     }
 
     return (
-        <div style={{marginTop: '25px', marginLeft: '55px'}}>
+        <div style={{marginTop: '25px', marginLeft: '55px', borderBottom: "1px solid black"}}>
             <div className="headings" style={{marginBottom: '20px'}}>
                 Type of Checkers
             </div>

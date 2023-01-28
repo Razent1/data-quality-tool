@@ -1,14 +1,17 @@
 import React from 'react';
-import Chosers from "./Chosers";
+import Choosers from "./Choosers";
 import Checkbox from "./Checkbox";
 import Cron from "./Cron";
+import {Navbar} from "react-bootstrap";
+import Container from 'react-bootstrap/Container';
 
 function Main() {
     return (
         <div className="container">
+
             <div className="row">
                 <div className="col">
-                    <Chosers/>
+                    <Choosers/>
                 </div>
                 <div className="col">
                     <Checkbox/>

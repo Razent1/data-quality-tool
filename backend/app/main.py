@@ -11,6 +11,8 @@ NOTEBOOK_PATH: str = os.environ["NOTEBOOK_PATH"]
 CLUSTER_ID: str = os.environ["CLUSTER_ID"]
 RESULT_DATABASE: str = os.environ["RESULT_DATABASE"]
 RESULT_TABLE_NAME: str = os.environ["RESULT_TABLE_NAME"]
+SLACK_CHANNEL_URL: str = os.environ["SLACK_CHANNEL_URL"]
+SLACK_CHANNEL_NAME: str = os.environ["SLACK_CHANNEL_NAME"]
 
 app = FastAPI(openapi_prefix=os.getenv('ROOT_PATH', ''))
 
@@ -224,6 +226,8 @@ async def send_checker(info: dict):
                         "checker_name": checker_name,
                         "cron": cron,
                         "result_table_name": f"{RESULT_DATABASE}.{RESULT_TABLE_NAME}",
+                        "slack_channel_url": SLACK_CHANNEL_URL,
+                        "slack_channel_name": SLACK_CHANNEL_NAME,
                         "job_id": "{{job_id}}"
                     },
                     "source": "WORKSPACE"
@@ -289,7 +293,6 @@ async def get_checker_results(page_num: int = 1, page_size: int = 5):
 
     if end >= res_len:
         response["pagination"]["next"] = None
-
         if page_num > 1:
             response["pagination"]["previous"] = f"/checker_results?page_num={page_num - 1}&page_size={page_size}"
         else:
@@ -302,7 +305,6 @@ async def get_checker_results(page_num: int = 1, page_size: int = 5):
         response["pagination"]["next"] = f"/checker_results?page_num={page_num + 1}&page_size={page_size}"
 
     return response
-    # return result[start:end]
 
 
 @app.post("/checker_history", tags=["checker_history"])

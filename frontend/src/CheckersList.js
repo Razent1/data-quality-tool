@@ -17,6 +17,7 @@ function CheckersList() {
     const mainInformationResults = checkersResults.map((item) => item.at(-1));
     const navigate = useNavigate();
     const columnNames = ['Name', 'Id', 'Job Id', 'Cron', 'Result', 'Created Time', 'Run Time'];
+    const pageSize = 6;
     const databricksHostName = process.env.REACT_APP_DATABRICKS_HOST_NAME;
     const databricksAccountId = process.env.REACT_APP_DATABRICKS_ACCOUNT_ID;
 
@@ -106,9 +107,9 @@ function CheckersList() {
     }
 
     const pagination = () => {
-        const pageCount = Math.ceil(dataLen / resultTableValues.length);
+        const pageCount = Math.ceil(dataLen / pageSize);
         const res = [];
-        for (let i = 0; i < pageCount; i++) {
+        for (let i = 0; i <= pageCount; i++) {
             res.push(<div className="col-1" style={{cursor: "pointer"}} onClick={() => {
                 setPageNum(i + 1);
                 setCheckersResults([]);
