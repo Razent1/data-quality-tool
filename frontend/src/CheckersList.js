@@ -163,11 +163,6 @@ function CheckersList() {
                     </div>
                     }
                 </div>
-                {/*<div className="d-grid gap-2" style={{alignSelf: "flex-start", marginTop: "100px"}}>*/}
-                {/*    <Button variant="primary" size="lg" onClick={() => navigate('/')}>*/}
-                {/*        Go Back*/}
-                {/*    </Button>{' '}*/}
-                {/*</div>*/}
             </div>
         </div>
     )
