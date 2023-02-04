@@ -251,6 +251,6 @@ def update_result_table(run_id: str,
     color = "red" if succcess_result == "Failed" else "green"
     img_url = "https://www.freeiconspng.com/uploads/tick-icon-16.png" if succcess_result == "Success" else "https://cdn-icons-png.flaticon.com/512/3588/3588294.png"
     Slack(url, slack_msg, title, color, channel, img_url).send_message()
-    # if succcess_result == "Failed":
-    #     summery = f"Data quality problem in table {db}.{table}. Checker type: {checker_type_name}"
-    #     Jira(jira_project_id, summery, "[System] Incident", "Medium", jira_url, jira_token).create_ticket()
+    if succcess_result == "Failed":
+        summery = f"Data quality problem in table {db}.{table}. Checker type: {checker_type_name}"
+        Jira(jira_project_id, summery, "[System] Incident", "Medium", jira_url, jira_token).create_ticket()
