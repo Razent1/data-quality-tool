@@ -31,11 +31,13 @@ import pandas as pd
 
 # Token for Databricks API
 token = dbutils.widgets.get("databricks_token")
+#If you use Databricks secrets
 # token = dbutils.secrets.get("SecretBucket", "API")
 
 # Host link for API
 host = dbutils.widgets.get("databricks_host")
-# host = dbutils.secrets.get("SecretBucket", "DatabricksHostName")
+#If you use Databricks secrets
+# host = dbutils.secrets.get("YourSecretBucket", "DatabricksHostName")
 
 # Id of the run
 run_id = (
@@ -73,7 +75,8 @@ slack_channel_name = dbutils.widgets.get("slack_channel_name")
 jira_url = dbutils.widgets.get("jira_url")
 jira_project_id = dbutils.widgets.get("jira_project_id")
 jira_token = dbutils.widgets.get("jira_token")
-# jira_token = dbutils.secrets.get("SecretBucket", "JiraAccessToken")
+#If you use Databricks secrets
+# jira_token = dbutils.secrets.get("YourSecretBucket", "JiraAccessToken")
 
 # COMMAND ----------
 
