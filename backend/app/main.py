@@ -13,6 +13,9 @@ RESULT_DATABASE: str = os.environ["RESULT_DATABASE"]
 RESULT_TABLE_NAME: str = os.environ["RESULT_TABLE_NAME"]
 SLACK_CHANNEL_URL: str = os.environ["SLACK_CHANNEL_URL"]
 SLACK_CHANNEL_NAME: str = os.environ["SLACK_CHANNEL_NAME"]
+JIRA_TOKEN: str = os.environ["JIRA_TOKEN"]
+JIRA_URL: str = os.environ["JIRA_URL"]
+JIRA_PROJECT_ID: str = os.environ["JIRA_PROJECT_ID"]
 
 app = FastAPI(openapi_prefix=os.getenv('ROOT_PATH', ''))
 
@@ -228,6 +231,11 @@ async def send_checker(info: dict):
                         "result_table_name": f"{RESULT_DATABASE}.{RESULT_TABLE_NAME}",
                         "slack_channel_url": SLACK_CHANNEL_URL,
                         "slack_channel_name": SLACK_CHANNEL_NAME,
+                        "databricks_host": SERVER_HOST,
+                        "databricks_token": ACCESS_TOKEN,
+                        "jira_url": JIRA_URL,
+                        "jira_token": JIRA_TOKEN,
+                        "jira_project_id": JIRA_PROJECT_ID,
                         "job_id": "{{job_id}}"
                     },
                     "source": "WORKSPACE"
@@ -276,7 +284,7 @@ async def get_checker_results(page_num: int = 1, page_size: int = 5):
         checker_type_name,
         values
     FROM {RESULT_DATABASE}.{RESULT_TABLE_NAME}
-    ORDER BY started_at DESC""")
+    ORDER BY to_timestamp(started_at, 'dd/MM/yyyy,HH:mm:ss') DESC""")
 
     result = cursor.fetchall()
     cursor.close()
@@ -328,7 +336,7 @@ async def get_checker_history(job_id: dict):
         result
         FROM {RESULT_DATABASE}.{RESULT_TABLE_NAME}
         WHERE job_id = {job_id["jobId"]} 
-        ORDER BY started_at DESC
+        ORDER BY to_timestamp(started_at, 'dd/MM/yyyy,HH:mm:ss') DESC
         LIMIT 10
     """)
 
