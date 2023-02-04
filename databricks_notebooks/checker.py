@@ -78,7 +78,7 @@ jira_token = dbutils.widgets.get("jira_token")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC Checkers for filtation conditions
+# MAGIC Checkers for filtration conditions
 
 # COMMAND ----------
 

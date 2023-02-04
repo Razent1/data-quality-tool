@@ -20,6 +20,10 @@ def db_api(host, token):
 # COMMAND ----------
 
 class DB_Api:
+
+    """
+    Class for working with Databricks API
+    """
     
     def __init__(self, host: str, token: str, run_id = None):
         self.db = DatabricksAPI(host=host, token=token)
@@ -130,6 +134,10 @@ class Slack:
 # COMMAND ----------
 
 class Jira:
+
+    """
+    Class for working with Jira
+    """
 
     def __init__(self, project_id, summery, issue_type, priority, url, token):
         self.project_id = project_id
