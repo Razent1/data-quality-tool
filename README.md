@@ -1,4 +1,4 @@
-# data-quality-tool v0.0.1
+# data-quality-tool v0.1
 ## Overview
 A data quality management tool written using JavaScript, Python, as well as using Databricks architectural solutions.
 This project was created as part of the thesis, and is also partially implemented in the use of the processes of the company [Obligo](https://myobligo.com/).
