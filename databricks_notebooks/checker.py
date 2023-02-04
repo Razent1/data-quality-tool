@@ -1,11 +1,19 @@
 # Databricks notebook source
+# MAGIC %pip install great_expectations
+
+# COMMAND ----------
+
+# MAGIC %pip install databricks_api
+
+# COMMAND ----------
+
 import re
 import statistics
 import json
 
 from great_expectations.dataset.sparkdf_dataset import SparkDFDataset
 
-from pyspark.sql.functions import mean, count, sum, to_date
+from pyspark.sql.functions import mean, count, sum, to_date, expr
 from pyspark.sql import types as T
 
 import pandas as pd
@@ -22,10 +30,12 @@ import pandas as pd
 # COMMAND ----------
 
 # Token for Databricks API
-token = dbutils.secrets.get("SecretBucket", "API")
+token = dbutils.widgets.get("databricks_token")
+# token = dbutils.secrets.get("SecretBucket", "API")
 
 # Host link for API
-host = dbutils.secrets.get("SecretBucket", "DatabricksHostName")
+host = dbutils.widgets.get("databricks_host")
+# host = dbutils.secrets.get("SecretBucket", "DatabricksHostName")
 
 # Id of the run
 run_id = (
@@ -58,6 +68,12 @@ filtration_condition = dbutils.widgets.get("filtration_condition")
 checker_name = dbutils.widgets.get("checker_name")
 cron = dbutils.widgets.get("cron")
 result_table_name = dbutils.widgets.get("result_table_name")
+slack_channel_url = dbutils.widgets.get("slack_channel_url")
+slack_channel_name = dbutils.widgets.get("slack_channel_name")
+jira_url = dbutils.widgets.get("jira_url")
+jira_project_id = dbutils.widgets.get("jira_project_id")
+jira_token = dbutils.widgets.get("jira_token")
+# jira_token = dbutils.secrets.get("SecretBucket", "JiraAccessToken")
 
 # COMMAND ----------
 
@@ -67,7 +83,10 @@ result_table_name = dbutils.widgets.get("result_table_name")
 # COMMAND ----------
 
 if filtration_condition:
-    df = spark.sql(f"SELECT * FROM {db}.{table} WHERE {filtation_condition}")
+    try:
+        df = spark.sql(f"SELECT * FROM {db}.{table} WHERE {filtation_condition}")
+    except:
+        df = spark.read.table(f"{db}.{table}") 
 else:
     df = spark.read.table(f"{db}.{table}")    
 
@@ -78,7 +97,8 @@ res_checkers = {'duplication': None,
                 'null_colls': None, 
                 'count_rows': None, 
                 'actuality_simple': None, 
-                'actuality_diff': None}
+                'actuality_diff': None,
+                'data_outliers': None}
 
 #Great expectations object for spark dataframe
 gdf = SparkDFDataset(df)
@@ -90,14 +110,16 @@ def duplication_checker(columns_duplication: list):
     Duplication checker
     """
     global gdf
+    column_val_name = "column"
     
     if len(columns_duplication) == 1:
         res = gdf.expect_column_values_to_be_unique(columns_duplication[0], result_format={'result_format': 'SUMMARY'})
     else:
         res = gdf.expect_multicolumn_values_to_be_unique(columns_duplication, result_format={'result_format': 'SUMMARY'})
+        column_val_name = "column_list"
 
     res["result"]["success"] = "Success" if res["success"] else "Failed"
-    res["result"]["column"] = res["expectation_config"]["kwargs"]["column"]
+    res["result"]["column"] = res["expectation_config"]["kwargs"][column_val_name]
     del res["result"]["partial_unexpected_index_list"]
     del res["result"]["partial_unexpected_list"]
     del res["result"]["partial_unexpected_counts"]
@@ -118,21 +140,34 @@ def null_colls_checker(columns_nulls: list):
         r["result"]["column"] = r["expectation_config"]["kwargs"]["column"]
         del r["result"]["partial_unexpected_list"]
         del r["result"]["partial_unexpected_index_list"]
-        checked_colls.append({checking_coll: r["result"]})
+        checked_colls.append(r["result"])
     return checked_colls
 
 # COMMAND ----------
 
-def detect_outliers(data):
+def data_outliers_checker(col_count_outliers: str, period_count_outliers: str):
     """
-    Function for deffine outliers of the data
+    Outliers checker
     """
-    data = sorted(data)
+    global gdf
 
-    # Compute the length of the data set
+    mean_filtration = (
+        (
+            gdf.spark_df.groupBy(to_date(f"{col_count_outliers}"))
+            .agg(count("*").alias("rows_per_day"))
+            .where(
+                f"to_date({col_count_outliers}) >= current_date() - interval {period_count_outliers} day"
+            )
+            .select("rows_per_day")
+        )
+        .rdd.map(lambda x: x[0])
+        .collect()
+    )
+
+    data = sorted(mean_filtration)
+
     n = len(data)
 
-    # Compute the first and third quartiles
     if n % 2 == 0:
         Q1 = statistics.median(data[:n // 2])
         Q3 = statistics.median(data[n // 2:])
@@ -140,17 +175,19 @@ def detect_outliers(data):
         Q1 = statistics.median(data[:n // 2])
         Q3 = statistics.median(data[n // 2 + 1:])
 
-    # Compute the interquartile range
     IQR = Q3 - Q1
 
-    # Compute the lower and upper bounds
     lower_bound = Q1 - 1.5 * IQR
     upper_bound = Q3 + 1.5 * IQR
 
-    # Identify any values that fall outside of the bounds as outliers
     outliers = [x for x in data if x < lower_bound or x > upper_bound]
 
-    return outliers
+    res = {"outliers": outliers, 
+            "count_outliers": len(outliers), 
+            "success": "Success" if len(outliers) == 0 else "Failed", 
+            "column": col_count_outliers}
+
+    return res
 
 # COMMAND ----------
 
@@ -202,26 +239,15 @@ def actuality_simple_checker(actuality_simple_col: str, period_actuality: str):
     """
     global gdf
 
-    actuality_filtation = (
-        (
-            gdf.spark_df.where(
-                f"to_date({actuality_simple_col}) >= current_date() - interval {period_actuality} day"
-            )
-            .select(to_date(f"{actuality_simple_col}"))
-            .distinct()
-        )
-        .rdd.map(lambda x: x[0].strftime("%Y-%m-%d"))
-        .collect()
-    )
-    last_day = SparkDFDataset(
-        gdf.spark_df.where(
-            f"to_date({actuality_simple_col}) = current_date() - interval 1 day"
-        )
-        .select(to_date(f"{actuality_simple_col}").alias("actual_date"))
-        .distinct()
-    )
-    res = last_day.expect_column_values_to_be_in_set(
-        "actual_date", actuality_filtation, result_format={"result_format": "SUMMARY"}
+    gdf.spark_df.createOrReplaceTempView(f"actuality")
+    actuality_filtation = SparkDFDataset(spark.sql(f"""
+                                    SELECT 
+                                    COUNT(DISTINCT to_date({actuality_simple_col}, 'yyyy-MM-dd')) AS {actuality_simple_col} 
+                                    FROM actuality
+                                    WHERE to_date({actuality_simple_col}) > current_date() - interval {period_actuality} day"""))
+
+    res = actuality_filtation.expect_column_values_to_be_in_set(
+        actuality_simple_col, [period_actuality], result_format={"result_format": "SUMMARY"}
     )
     res["result"]["success"] = "Success" if res["success"] else "Failed"
     res["result"]["column"] = res["expectation_config"]["kwargs"]["column"]
@@ -244,27 +270,40 @@ if checkers["duplication"]:
                         job_id=job_id,
                         cron=cron,
                         checker_name=checker_name,
-                        res_checkers=res_checkers,
+                        succcess_result=res_checkers["duplication"]["success"],
+                        checker_final_parametrs=res_checkers["duplication"],
                         job_start_time=job_start_time,
                         time_of_check=time_of_check,
                         db=db,
                         table=table,
                         result_table_name=result_table_name,
-                        checker_type_name="duplication")
+                        checker_type_name="duplication",
+                        slack_channel_url=slack_channel_url,
+                        slack_channel_name=slack_channel_name,
+                        jira_url=jira_url,
+                        jira_token=jira_token,
+                        jira_project_id=jira_project_id)
 elif checkers["nullCols"]:
     columns_nulls = eval(dbutils.widgets.get("columns_nulls"))
     res_checkers["null_colls"] = null_colls_checker(columns_nulls)
-    update_result_table(run_id=run_id,
-                        job_id=job_id,
-                        cron=cron,
-                        checker_name=checker_name,
-                        res_checkers=res_checkers,
-                        job_start_time=job_start_time,
-                        time_of_check=time_of_check,
-                        db=db,
-                        table=table,
-                        result_table_name=result_table_name,
-                        checker_type_name="null_colls")
+    for col_checker in res_checkers["null_colls"]:
+        update_result_table(run_id=run_id,
+                            job_id=job_id,
+                            cron=cron,
+                            checker_name=checker_name,
+                            succcess_result=col_checker["success"],
+                            checker_final_parametrs=col_checker,
+                            job_start_time=job_start_time,
+                            time_of_check=time_of_check,
+                            db=db,
+                            table=table,
+                            result_table_name=result_table_name,
+                            checker_type_name="null_colls",
+                            slack_channel_url=slack_channel_url,
+                            slack_channel_name=slack_channel_name,
+                            jira_url=jira_url,
+                            jira_token=jira_token,
+                            jira_project_id=jira_project_id)
 elif checkers["countRows"]:
     col_count_rows = dbutils.widgets.get("col_count_rows")
     period_count_rows = dbutils.widgets.get("period_count_rows")
@@ -273,15 +312,21 @@ elif checkers["countRows"]:
                         job_id=job_id,
                         cron=cron,
                         checker_name=checker_name,
-                        res_checkers=res_checkers,
+                        succcess_result=res_checkers["count_rows"]["success"],
+                        checker_final_parametrs=res_checkers["count_rows"],
                         job_start_time=job_start_time,
                         time_of_check=time_of_check,
                         db=db,
                         table=table,
                         result_table_name=result_table_name,
-                        checker_type_name="count_rows")
+                        checker_type_name="count_rows",
+                        slack_channel_url=slack_channel_url,
+                        slack_channel_name=slack_channel_name,
+                        jira_url=jira_url,
+                        jira_token=jira_token,
+                        jira_project_id=jira_project_id)
 elif checkers["actualitySimple"]:
-    actuality_simple_col = eval(dbutils.widgets.get("actuality")["actualitySimple"])
+    actuality_simple_col = eval(dbutils.widgets.get("actuality"))['actualitySimple']
     period_actuality = dbutils.widgets.get("period_actuality")
     res_checkers["actuality_simple"] = actuality_simple_checker(
         actuality_simple_col, period_actuality
@@ -290,10 +335,39 @@ elif checkers["actualitySimple"]:
                         job_id=job_id,
                         cron=cron,
                         checker_name=checker_name,
-                        res_checkers=res_checkers,
+                        succcess_result=res_checkers["actuality_simple"]["success"],
+                        checker_final_parametrs=res_checkers["actuality_simple"],
                         job_start_time=job_start_time,
                         time_of_check=time_of_check,
                         db=db,
                         table=table,
                         result_table_name=result_table_name,
-                        checker_type_name="actuality_simple")
+                        checker_type_name="actuality_simple",
+                        slack_channel_url=slack_channel_url,
+                        slack_channel_name=slack_channel_name,
+                        jira_url=jira_url,
+                        jira_token=jira_token,
+                        jira_project_id=jira_project_id)
+elif checkers["dataOutliers"]:
+    col_data_outliers = dbutils.widgets.get("col_data_outliers")
+    period_data_outliers = dbutils.widgets.get("period_data_outliers")
+    res_checkers["data_outliers"] = data_outliers_checker(
+        col_data_outliers, period_data_outliers
+    )
+    update_result_table(run_id=run_id,
+                        job_id=job_id,
+                        cron=cron,
+                        checker_name=checker_name,
+                        succcess_result=res_checkers["data_outliers"]["success"],
+                        checker_final_parametrs=res_checkers["data_outliers"],
+                        job_start_time=job_start_time,
+                        time_of_check=time_of_check,
+                        db=db,
+                        table=table,
+                        result_table_name=result_table_name,
+                        checker_type_name="data_outliers",
+                        slack_channel_url=slack_channel_url,
+                        slack_channel_name=slack_channel_name,
+                        jira_url=jira_url,
+                        jira_token=jira_token,
+                        jira_project_id=jira_project_id)
