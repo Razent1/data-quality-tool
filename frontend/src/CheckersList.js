@@ -102,7 +102,7 @@ function CheckersList() {
     const createHistoryRunsLine = () => {
         return (history.map((run) => <div
             className={'col ' + (run[3] === 'Failed' ? 'box red' : 'box green')}
-            onClick={() => openHref(`${databricksHostName}/?o=${databricksAccountId}#job/${info[2]}/run/${info[1]}`)}
+            onClick={() => openHref(`https://${databricksHostName}/?o=${databricksAccountId}#job/${info[2]}/run/${info[1]}`)}
             style={{cursor: "pointer"}}></div>));
     }
 
@@ -137,10 +137,10 @@ function CheckersList() {
                             <div className="row" style={{margin: "15px"}}>Checker type: {info[8]}</div>
                             <div className="row" style={{margin: "15px"}}>Checked table: {info[7]}</div>
                             <div className="row" style={{margin: "15px"}}>Run Id: <a
-                                href={`${databricksHostName} / ? o =${databricksAccountId}#job /${info[2]}/run/${info[1]}`}>{info[1]}</a>
+                                href={`https://${databricksHostName}/?o=${databricksAccountId}#job/${info[2]}/run/${info[1]}`}>{info[1]}</a>
                             </div>
                             <div className="row" style={{margin: "15px"}}>Job Id: <a
-                                href={`${databricksHostName} / ? o =${databricksAccountId}#job /${info[2]}`}>{info[2]}</a>
+                                href={`https://${databricksHostName}/?o=${databricksAccountId}#job/${info[2]}`}>{info[2]}</a>
                             </div>
                             <div className="row" style={{margin: "15px", borderBottom: "solid"}}>Time of
                                 check: {info[5]}</div>

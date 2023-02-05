@@ -286,7 +286,7 @@ if checkers["duplication"]:
                         jira_url=jira_url,
                         jira_token=jira_token,
                         jira_project_id=jira_project_id)
-elif checkers["nullCols"]:
+if checkers["nullCols"]:
     columns_nulls = eval(dbutils.widgets.get("columns_nulls"))
     res_checkers["null_colls"] = null_colls_checker(columns_nulls)
     for col_checker in res_checkers["null_colls"]:
@@ -307,7 +307,7 @@ elif checkers["nullCols"]:
                             jira_url=jira_url,
                             jira_token=jira_token,
                             jira_project_id=jira_project_id)
-elif checkers["countRows"]:
+if checkers["countRows"]:
     col_count_rows = dbutils.widgets.get("col_count_rows")
     period_count_rows = dbutils.widgets.get("period_count_rows")
     res_checkers["count_rows"] = count_rows_checker(col_count_rows, period_count_rows)
@@ -328,7 +328,7 @@ elif checkers["countRows"]:
                         jira_url=jira_url,
                         jira_token=jira_token,
                         jira_project_id=jira_project_id)
-elif checkers["actualitySimple"]:
+if checkers["actualitySimple"]:
     actuality_simple_col = eval(dbutils.widgets.get("actuality"))['actualitySimple']
     period_actuality = dbutils.widgets.get("period_actuality")
     res_checkers["actuality_simple"] = actuality_simple_checker(
@@ -351,7 +351,7 @@ elif checkers["actualitySimple"]:
                         jira_url=jira_url,
                         jira_token=jira_token,
                         jira_project_id=jira_project_id)
-elif checkers["dataOutliers"]:
+if checkers["dataOutliers"]:
     col_data_outliers = dbutils.widgets.get("col_data_outliers")
     period_data_outliers = dbutils.widgets.get("period_data_outliers")
     res_checkers["data_outliers"] = data_outliers_checker(
