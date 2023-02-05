@@ -180,7 +180,7 @@ def update_dashboard_info(db: str, table_name: str) -> None:
         GROUP BY to_timestamp(started_at, 'dd/MM/yyyy,HH:mm:ss')
        )
        SELECT * FROM (
-       SELECT last_checks.name, 
+       SELECT CONCAT(dc.name, '(', COALESCE(values.column, ''), ')') name,
                        to_date(last_checks.checker_date) AS checker_date,
                        dc.result,
                        CONCAT(ROUND(IF(dc.checker_type_name in ('null_colls', 'actuality_simple', 'duplication'), values.unexpected_percent_total, IF(result = 'Failed', 100, 0)), 2), '%') perc_failed_or_success
@@ -195,7 +195,7 @@ def update_dashboard_info(db: str, table_name: str) -> None:
             .mode("overwrite")
             .option("mergeSchema", "true")
             .format("delta")
-            .saveAsTable(f"{db}.dashboard_quality_checks"))
+            .saveAsTable(f"{db}.dashboard_quality_checks_{table_name}"))
 
 # COMMAND ----------
 
