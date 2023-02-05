@@ -87,7 +87,7 @@ jira_token = dbutils.widgets.get("jira_token")
 
 if filtration_condition:
     try:
-        df = spark.sql(f"SELECT * FROM {db}.{table} WHERE {filtation_condition}")
+        df = spark.sql(f"SELECT * FROM {db}.{table} WHERE {filtration_condition}")
     except:
         df = spark.read.table(f"{db}.{table}") 
 else:
