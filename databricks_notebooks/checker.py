@@ -113,16 +113,11 @@ def duplication_checker(columns_duplication: list):
     Duplication checker
     """
     global gdf
-    column_val_name = "column"
     
-    if len(columns_duplication) == 1:
-        res = gdf.expect_column_values_to_be_unique(columns_duplication[0], result_format={'result_format': 'SUMMARY'})
-    else:
-        res = gdf.expect_multicolumn_values_to_be_unique(columns_duplication, result_format={'result_format': 'SUMMARY'})
-        column_val_name = "column_list"
+    res = gdf.expect_compound_columns_to_be_unique(columns_duplication, result_format={'result_format': 'SUMMARY'})
 
     res["result"]["success"] = "Success" if res["success"] else "Failed"
-    res["result"]["column"] = res["expectation_config"]["kwargs"][column_val_name]
+    res["result"]["column"] = res["expectation_config"]["kwargs"]["column_list"]
     del res["result"]["partial_unexpected_index_list"]
     del res["result"]["partial_unexpected_list"]
     del res["result"]["partial_unexpected_counts"]
