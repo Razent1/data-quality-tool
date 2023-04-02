@@ -110,10 +110,11 @@ function CheckersList() {
         const pageCount = Math.ceil(dataLen / pageSize);
         const res = [];
         for (let i = 0; i <= pageCount; i++) {
+            if (i < 12) {
             res.push(<div className="col-1" style={{cursor: "pointer"}} onClick={() => {
                 setPageNum(i + 1);
                 setCheckersResults([]);
-            }}>{i + 1}</div>)
+            }}>{i + 1}</div>)}
         }
         return res;
     }

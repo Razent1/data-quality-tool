@@ -16,6 +16,7 @@ SLACK_CHANNEL_NAME: str = os.environ["SLACK_CHANNEL_NAME"]
 JIRA_TOKEN: str = os.environ["JIRA_TOKEN"]
 JIRA_URL: str = os.environ["JIRA_URL"]
 JIRA_PROJECT_ID: str = os.environ["JIRA_PROJECT_ID"]
+GIT_URL: str = os.environ["GIT_URL"]
 
 app = FastAPI(openapi_prefix=os.getenv('ROOT_PATH', ''))
 
@@ -208,6 +209,7 @@ async def send_checker(info: dict):
     url_api = f'https://{SERVER_HOST}/api/2.1/jobs/create'
     body = {
         "name": checker_name,
+        "tags": {"checks": ""},
         "tasks": [
             {
                 "task_key": checker_name,
@@ -238,10 +240,22 @@ async def send_checker(info: dict):
                         "jira_project_id": JIRA_PROJECT_ID,
                         "job_id": "{{job_id}}"
                     },
-                    "source": "WORKSPACE"
+                    "source": "GIT"
                 },
                 "existing_cluster_id": CLUSTER_ID
             }],
+        "git_source": {
+            "git_url": GIT_URL,
+            "git_branch": "main",
+            "git_provider": "GitLab"
+        },
+        #TODO hardcode part. need to implement this logic in ui
+        "email_notifications": {
+            "on_failure": [
+                "ilya.rozentul@myobligo.com",
+                "avner@myobligo.com"
+            ],
+        },
         "schedule": {
             "quartz_cron_expression": f"{cron}",
             "timezone_id": "Europe/London"
@@ -313,7 +327,6 @@ async def get_checker_results(page_num: int = 1, page_size: int = 5):
         response["pagination"]["next"] = f"/checker_results?page_num={page_num + 1}&page_size={page_size}"
 
     return response
-
 
 @app.post("/checker_history", tags=["checker_history"])
 async def get_checker_history(job_id: dict):
