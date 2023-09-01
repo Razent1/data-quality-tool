@@ -14,21 +14,6 @@
 #export JIRA_PROJECT_ID=<jira-project-id>
 #export GIT_URL=<git-url>
 
-export TOKEN=dapifb287f87a839119fa623206a5c545a0d
-export SERVER_HOST=dbc-18975113-1ba6.cloud.databricks.com
-export HTTP_PATH=/sql/1.0/warehouses/33b05f27aa211816
-export NOTEBOOK_PATH=/Users/ilya.rozentul@myobligo.com/diplom/checker
-export CLUSTER_ID=0502-062208-z7pwtwc3
-export RESULT_DATABASE=streaming_logs
-export RESULT_TABLE_NAME=data_quality_checks
-export DATABRICKS_ACCOUNT_ID=2520309401638937
-export SLACK_CHANNEL_URL=https://hooks.slack.com/services/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
-export SLACK_CHANNEL_NAME=activity-data-quality
-export JIRA_TOKEN=ATATT3xFfGF0FVGe4t9gvh5lrPTfIiiESkwatAV7wf9m1ugO8_4VdYv7JGNzNxOaUfkz_F3kwJnvxiCOUWlqypLSlxXrcL6EcTEW3hHangPIznGEiYNg7Wn7Uf8ib2i2DapDmjWScWFVGu3owpvNX0aSzpKGfkXnaA70XfzEwZJamMPUnqO5Rug=CD89F3DC
-export JIRA_URL=https://obligo.atlassian.net/rest/api/3/issue/
-export JIRA_PROJECT_ID=10017
-export GIT_URL=https://gitlab.com/obligo/data.git
-
 service="$1"
 
 if [ -z "$1" ]; then
